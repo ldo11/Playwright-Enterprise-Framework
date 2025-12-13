@@ -1,0 +1,34 @@
+# Python / Playwright
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dll
+.env
+.venv/
+pytest-cache/
+.playwright/
+.auth/
+reports/
+
+# Node / Angular / API
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.pnpm-store/
+
+# API runtime data
+TestProduct/API/data.json
+
+# Build artifacts
+coverage/
+dist/
+build/
+.tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
