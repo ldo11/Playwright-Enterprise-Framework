@@ -174,8 +174,9 @@ npm start
 
 The app provides:
 - `/login` page to authenticate and store the JWT token in `localStorage`.
-- `/dashboard` client list with role-based filtering (Admin sees all; User sees only theirs).
+- `/dashboard` client list ("Client List" toolbar) with role-based filtering (Admin sees all; User sees only their own).
 - "Add Client" dialog to create a new client.
+- Ability to click a client's first name to open a detail dialog where you can view and edit client info.
 
 ### Configuration notes
 - API base URL is set in `src/app/services/client.service.ts` as `http://localhost:8000`.
@@ -209,42 +210,21 @@ The app provides:
 
 ## Backend API (Node.js/Express) - Local Development
 
-A REST API is provided under `Testproduct/API` using Express, MSSQL, JWT auth, and CORS for the Angular UI.
+A REST API is provided under `TestProduct/API` using Express, JWT auth, CORS for the Angular UI, and **JSON-file storage** (no external database).
 
 ### Prerequisites
 - Node.js 18+ and npm 9+
-- SQL Server running locally with database `ClientManagementDB`
-  - Tables: `Users(UserID, Username, PasswordHash, Role)` and `Clients(ClientID, FirstName, LastName, DOB, Sex, CreatedByUserID)`
-- If using Windows Authentication, run on Windows with `msnodesqlv8`; otherwise use SQL Login (`tedious`).
 
-### Environment setup
-Create `Testproduct/API/.env` and configure one of the following:
-
-Option A: SQL Login (cross-platform)
-```ini
-PORT=8000
-CORS_ORIGIN=http://localhost:4200
-JWT_SECRET=change_this_in_production
-DB_DRIVER=tedious
-DB_HOST=localhost
-DB_NAME=ClientManagementDB
-DB_USER=your_sql_user
-DB_PASSWORD=your_sql_password
-DB_PORT=1433
-```
-
-Option B: Windows Auth (Windows only)
-```ini
-PORT=8000
-CORS_ORIGIN=http://localhost:4200
-JWT_SECRET=change_this_in_production
-DB_DRIVER=msnodesqlv8
-DB_CONNECTION_STRING=server=localhost;Database=ClientManagementDB;Trusted_Connection=Yes;Driver={SQL Server Native Client 11.0}
-```
+### Data storage
+- The API stores users and clients in `TestProduct/API/data.json`.
+- On first start, if the file does not exist, it is created automatically with:
+  - One default user: `user1` / `123456` (role: `Admin`).
+  - An empty `clients` array.
+- `data.json` is git-ignored and safe to delete between runs if you want a clean state.
 
 ### Install and run
 ```bash
-cd Testproduct/API
+cd TestProduct/API
 npm install
 npm run dev   # nodemon
 # or
@@ -252,27 +232,96 @@ npm start     # node server.js
 ```
 Server starts at: http://localhost:8000
 
-### Seed a user (generate bcrypt hash)
-```bash
-node -e "require('bcryptjs').hash('YourPassword123', 10).then(h=>console.log(h))"
-# Insert into Users table with the printed hash
-```
-
 ### Endpoints
-- POST `/api/login` (also `/login`)
-  - Body: `{ "username": "...", "password": "..." }`
+- POST `/login` (also `/api/login`)
+  - Body: `{ "username": "user1", "password": "123456" }` (by default)
   - Response: `{ token, user: { userId, username, role } }`
-- GET `/api/clients` (also `/clients`)
+- GET `/clients` (also `/api/clients`)
   - Header: `Authorization: Bearer <token>`
-  - Admin role -> returns all. User role -> returns only own clients.
-  - Optional: `?mine=true` to force own clients
-- POST `/api/clients` (also `/clients`)
+  - Admin role -> returns all clients.
+  - User role -> returns only clients where `createdByUserId` matches the current user.
+  - Optional: `?mine=true` to force only own clients.
+- POST `/clients` (also `/api/clients`)
   - Header: `Authorization: Bearer <token>`
   - Body: `{ firstName, lastName, dob: "yyyy-mm-dd", sex: "Male|Female|N/A" }`
-  - Automatically sets `CreatedByUserID` from the JWT.
+  - Automatically sets `createdByUserId` from the JWT.
+- GET `/clients/:id` (also `/api/clients/:id`)
+  - Header: `Authorization: Bearer <token>`
+  - Returns a single client if the user is Admin or the creator of that client.
+- PUT `/clients/:id` (also `/api/clients/:id`)
+  - Header: `Authorization: Bearer <token>`
+  - Body: `{ firstName, lastName, dob: "yyyy-mm-dd", sex: "Male|Female|N/A" }`
+  - Updates an existing client (Admin can edit any client; non-admins can edit only their own).
+
+### Swagger API documentation
+- When the backend is running (default `http://localhost:8000`),
+  open `http://localhost:8000/api-docs` in your browser to view the
+  Swagger UI for the API.
 
 ### Common issues
-- Connection errors: validate `.env` DB settings and that SQL Server is reachable on port 1433.
-- Login fails: ensure `Users.PasswordHash` contains a bcrypt hash of the provided password.
-- CORS errors from UI: ensure `CORS_ORIGIN` matches the Angular dev origin (http://localhost:4200).
+- Port already in use: ensure nothing else is running on `8000`.
+- CORS errors from UI: ensure `CORS_ORIGIN` in `server.js` (or `.env`) matches the Angular dev origin (`http://localhost:4200`).
+
+### Backend API tests (Jest)
+- Tests live under `TestProduct/API/tests` and currently cover:
+  - `POST /login` with username `user1` and password `123456` against the JSON store.
+- Run tests:
+  ```bash
+  cd TestProduct/API
+  npm install
+  npm test
+  ```
+
+## TestProduct Playwright Tests (Python)
+
+Under `PlayWrightTest/` there is a Python + Playwright + Pytest test harness. It has been configured to target the local TestProduct API and Angular UI.
+
+### Configuration for TestProduct
+- Config file: `PlayWrightTest/config/settings.py`
+  - `BASE_URL`: TestProduct API base URL (default: `http://localhost:8000`).
+  - `UI_BASE_URL`: Angular UI base URL (default: `http://localhost:4200`).
+  - `APP_URL`: Dashboard URL (default: `http://localhost:4200/dashboard`).
+  - `LOGIN_API_PATH`: API login path (default: `/login`).
+  - `API_USERNAME` / `API_PASSWORD`: default to `user1` / `123456`.
+
+### API suite
+- File: `PlayWrightTest/tests/test_testproduct_api.py`
+- Marked with `@pytest.mark.api`.
+- Covers:
+  - `GET /health` on the API.
+  - `POST /login` and `GET /clients` using the JSON store.
+
+### UI suite (pre-authenticated via API)
+- File: `PlayWrightTest/tests/test_testproduct_ui.py`
+- Marked with `@pytest.mark.ui`.
+- Uses the existing fixtures in `PlayWrightTest/conftest.py`:
+  - `auth_storage_path` (session-scoped, per worker):
+    - Logs in once via the TestProduct API using `API_USERNAME`/`API_PASSWORD`.
+    - Writes a Playwright `storageState` JSON that seeds `localStorage['token']` for the Angular origin.
+  - `auth_context` / `auth_page`: start each test with a pre-authenticated Playwright context/page.
+- POM: `PlayWrightTest/pages/home_page.py` represents the TestProduct dashboard (Client List).
+- Tests:
+  - Verify the Client List dashboard is visible when using the pre-authenticated storage state.
+  - Create a client via the UI and confirm its first name appears as a clickable entry.
+
+### Running the Playwright tests
+```bash
+cd PlayWrightTest
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Ensure TestProduct API and UI are running locally first:
+# - API:    cd TestProduct/API && npm run dev
+# - UI:     cd TestProduct/UI  && npm start
+
+# Run only TestProduct API tests
+pytest -m api
+
+# Run only TestProduct UI tests with 4 parallel workers (each worker logs in via API once)
+pytest -m ui -n 4 --browser chromium
+
+# Run everything (all suites)
+pytest -n 4 --browser chromium
+```
 
