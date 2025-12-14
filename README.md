@@ -128,3 +128,22 @@ pytest -n 4
 - **Health Check**: Verifies API status.
 - **Auth**: Tests login and token generation.
 - **Validation**: Verifies error handling for missing fields, invalid data types, and unauthorized access.
+
+## Continuous Integration (GitHub Actions)
+The project includes a pre-configured GitHub Actions workflow located in `.github/workflows/test.yml`. This workflow automatically runs all tests on every Pull Request and push to the `main` or `master` branches.
+
+### Workflow Steps
+1. **Setup**: Installs Node.js (for App) and Python (for Tests).
+2. **Start Services**:
+   - Launches the **API** on port 3001.
+   - Launches the **Angular UI** on port 4200.
+3. **Install Dependencies**: Installs Python packages and Playwright browsers.
+4. **Wait for Readiness**: Polls the API health endpoint and UI URL until they are up.
+5. **Run Tests**: Executes `pytest` with HTML reporting enabled.
+6. **Artifacts**: Uploads the `report.html` as a workflow artifact for review.
+
+### Viewing Test Results in CI
+1. Go to the **Actions** tab in your GitHub repository.
+2. Click on the latest workflow run.
+3. Scroll down to the **Artifacts** section.
+4. Download **playwright-report** to view the detailed HTML test report.
