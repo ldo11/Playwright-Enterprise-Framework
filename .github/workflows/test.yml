@@ -1,0 +1,86 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+
+    - name: Install API Dependencies
+      working-directory: TestProduct/API
+      run: npm ci
+
+    - name: Start API
+      working-directory: TestProduct/API
+      run: |
+        npm start &
+        echo "API started in background"
+
+    - name: Install UI Dependencies
+      working-directory: TestProduct/UI
+      run: npm ci
+
+    - name: Start UI
+      working-directory: TestProduct/UI
+      run: |
+        npx ng analytics off
+        npx ng serve --port 4200 --host 127.0.0.1 --disable-host-check &
+        echo "UI started in background"
+
+    - name: Install Python Dependencies
+      working-directory: PlayWrightTest
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install Playwright Browsers
+      run: |
+        playwright install chromium
+        playwright install-deps chromium
+
+    - name: Wait for Services
+      run: |
+        echo "Waiting for API to be ready..."
+        timeout 60s bash -c 'until curl -s http://127.0.0.1:3001/api/health > /dev/null; do sleep 2; done'
+        echo "API is ready!"
+        
+        echo "Waiting for UI to be ready..."
+        timeout 180s bash -c 'until curl -s http://127.0.0.1:4200 > /dev/null; do sleep 5; done'
+        echo "UI is ready!"
+
+    - name: Run Playwright Tests
+      working-directory: PlayWrightTest
+      env:
+        TESTPRODUCT_API_BASE_URL: http://127.0.0.1:3001
+        TESTPRODUCT_UI_BASE_URL: http://127.0.0.1:4200
+        # Ensure CI uses headless mode (default in pytest.ini is headless unless --headed passed)
+      run: pytest --html=report.html
+
+    - name: Upload Test Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: PlayWrightTest/report.html
+        retention-days: 30
