@@ -1,0 +1,55 @@
+Warning: Running a server with --disable-host-check is a security risk. See https://medium.com/webpack/webpack-dev-server-middleware-security-issues-1489d950874a for more information.
+****************************************************************************************
+This is a simple server for use in testing or debugging Angular applications locally.
+It hasn't been reviewed for security issues.
+
+DON'T USE IT FOR PRODUCTION!
+****************************************************************************************
+- Generating browser application bundles (phase: setup)...
+✔ Browser application bundle generation complete.
+
+Initial chunk files   | Names         |  Raw size | Estimated transfer size
+main.js               | main          | 872.22 kB |               185.24 kB
+styles.css, styles.js | styles        | 134.32 kB |                20.19 kB
+polyfills.js          | polyfills     |  81.31 kB |                23.75 kB
+runtime.js            | runtime       |   1.28 kB |               667 bytes
+
+                      | Initial total |   1.09 MB |               229.84 kB
+
+Build at: 2025-12-14T02:52:32.282Z - Hash: 58cded9899d8ef06 - Time: 12672ms
+
+** Angular Live Development Server is listening on 0.0.0.0:4201, open your browser on http://localhost:4201/ **
+
+
+✔ Compiled successfully.
+✔ Browser application bundle generation complete.
+
+
+
+4 unchanged chunks
+
+Build at: 2025-12-14T02:52:34.467Z - Hash: 58cded9899d8ef06 - Time: 2097ms
+
+✔ Compiled successfully.
+✔ Browser application bundle generation complete.
+
+Initial chunk files | Names   |  Raw size | Estimated transfer size
+main.js             | main    | 872.22 kB |               185.05 kB
+runtime.js          | runtime |   1.28 kB |               666 bytes
+
+2 unchanged chunks
+
+Build at: 2025-12-14T02:58:07.239Z - Hash: 9f4d2a0ae257ea83 - Time: 10405ms
+
+✔ Compiled successfully.
+�� Browser application bundle generation complete.
+
+Initial chunk files | Names   |  Raw size | Estimated transfer size
+main.js             | main    | 872.22 kB |               185.05 kB
+runtime.js          | runtime |   1.28 kB |               666 bytes
+
+2 unchanged chunks
+
+Build at: 2025-12-14T02:58:07.213Z - Hash: 9f4d2a0ae257ea83 - Time: 10377ms
+
+✔ Compiled successfully.

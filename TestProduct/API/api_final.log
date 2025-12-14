@@ -1,0 +1,63 @@
+API listening on http://0.0.0.0:3001
+POST /clients payload: { firstName: 'CRUD', lastName: 'Test', dob: '1990-01-01', sex: 'Male' }
+POST /clients payload: {
+  firstName: 'Playwright_1765682107',
+  lastName: 'User',
+  dob: '2000-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto109380',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto110523',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto112002',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto112739',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}
+POST /clients payload: { firstName: 'CRUD', lastName: 'Test', dob: '1990-01-01', sex: 'Male' }
+POST /clients payload: {
+  firstName: 'Playwright_1765682153',
+  lastName: 'User',
+  dob: '2000-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto156530',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto157787',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto159377',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}
+POST /clients payload: {
+  firstName: 'Auto160116',
+  lastName: 'Test',
+  dob: '1990-01-01',
+  sex: 'Male'
+}

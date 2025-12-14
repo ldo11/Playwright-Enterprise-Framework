@@ -1,0 +1,1 @@
+{"ast":null,"code":"/** Coerces a data-bound value (typically a string) to a boolean. */\nfunction coerceBooleanProperty(value) {\n  return value != null && `${value}` !== 'false';\n}\nexport { coerceBooleanProperty as c };\n//# sourceMappingURL=boolean-property-DaaVhX5A.mjs.map","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

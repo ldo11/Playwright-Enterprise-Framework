@@ -1,0 +1,92 @@
+BROWSER LOG: [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading enabled, Progress disabled, Overlay enabled.
+BROWSER LOG: Failed to load resource: the server responded with a status of 401 (Unauthorized)
+BROWSER LOG: Il
+BROWSER LOG: Failed to load resource: the server responded with a status of 401 (Unauthorized)
+BROWSER LOG: Il
+DEBUG: Snackbar Error: Failed to load clients
+Dismiss
+F
+=================================== FAILURES ===================================
+___________________ TestTestProductUI.test_add_client_via_ui ___________________
+
+self = <test_testproduct_ui.TestTestProductUI object at 0x1068b4b20>
+auth_page = <Page url='http://127.0.0.1:4201/dashboard'>
+
+    def test_add_client_via_ui(self, auth_page):
+        """Create a client via the UI and assert its first name appears as a clickable entry."""
+        auth_page.on("console", lambda msg: print(f"BROWSER LOG: {msg.text}"))
+    
+        home = HomePage(auth_page)
+        home.goto()
+        assert home.is_logged_in(), "Precondition: user should be logged in."
+    
+        # Unique name to ensure we find the right one
+        import time
+        unique_suffix = str(int(time.time()))
+        first_name = f"Playwright_{unique_suffix}"
+    
+        # Using MM/DD/YYYY for UI input as Angular Material default locale often expects this
+>       home.add_client(first_name, "User", "01/01/2000", "Male")
+
+tests/test_testproduct_ui.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pages.home_page.HomePage object at 0x106bb2a60>
+first_name = 'Playwright_1765681169', last_name = 'User', dob = '01/01/2000'
+sex = 'Male'
+
+    def add_client(self, first_name: str, last_name: str, dob: str, sex: str = "Male") -> None:
+        """Create a new client through the UI form."""
+        self.add_client_button.click()
+        self.page.get_by_label("First Name").fill(first_name)
+        self.page.get_by_label("Last Name").fill(last_name)
+        # Type the date to ensure Angular detects input events properly
+        self.page.get_by_label("Date of Birth").click()
+        self.page.get_by_label("Date of Birth").fill("")
+        self.page.get_by_label("Date of Birth").type(dob)
+        self.page.get_by_label("Date of Birth").press("Enter")
+    
+        # Angular Material 'mat-select' is not a native <select>, so we must:
+        # 1. Click the trigger to open the dropdown
+        # 2. Click the option by name
+        # Using locator by formControlName to be precise, as label might have '*' suffix
+        self.page.locator("mat-select[formControlName='sex']").click()
+        self.page.get_by_role("option", name=sex, exact=True).click()
+    
+        save_btn = self.page.get_by_role("button", name="Save")
+        if save_btn.is_disabled():
+            # Debug: print errors
+            print("DEBUG: Save button is disabled. Checking for errors...")
+            # Check for mat-error
+            errors = self.page.locator("mat-error").all_inner_texts()
+            print(f"DEBUG: mat-errors found: {errors}")
+    
+        save_btn.click()
+    
+        # Check for error snackbar
+        try:
+            # Short wait for potential error
+            snackbar = self.page.locator("simple-snack-bar").first
+            if snackbar.is_visible(timeout=2000):
+                text = snackbar.inner_text()
+                if "Failed" in text or "Error" in text:
+                    print(f"DEBUG: Snackbar Error: {text}")
+                    # If error, the dialog won't close, so this explains the failure.
+        except:
+            pass
+    
+        # Wait for dialog to close to ensure client is added and list is refreshing
+>       expect(self.page.get_by_role("dialog")).to_be_hidden()
+E       AssertionError: Locator expected to be hidden
+E       Actual value: visible 
+E       Call log:
+E         - Expect "to_be_hidden" with timeout 5000ms
+E         - waiting for get_by_role("dialog")
+E           9 × locator resolved to <mat-dialog-container tabindex="-1" role="dialog" aria-modal="false" id="mat-mdc-dialog-0" aria-labelledby="mat-mdc-dialog-title-0" class="mat-mdc-dialog-container mdc-dialog cdk-dialog-container mat-mdc-dialog-container-with-actions mdc-dialog--open">…</mat-dialog-container>
+E             - unexpected value "visible"
+
+pages/home_page.py:74: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_testproduct_ui.py::TestTestProductUI::test_add_client_via_ui
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 6.86s

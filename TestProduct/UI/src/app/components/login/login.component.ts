@@ -64,6 +64,7 @@ export class LoginComponent {
       error: (err: unknown) => {
         console.error(err);
         this.snack.open('Invalid credentials', 'Dismiss', { duration: 3000 });
+        this.loading = false;
       },
       complete: () => (this.loading = false),
     });

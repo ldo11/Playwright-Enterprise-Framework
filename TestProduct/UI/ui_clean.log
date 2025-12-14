@@ -1,0 +1,44 @@
+Warning: Running a server with --disable-host-check is a security risk. See https://medium.com/webpack/webpack-dev-server-middleware-security-issues-1489d950874a for more information.
+****************************************************************************************
+This is a simple server for use in testing or debugging Angular applications locally.
+It hasn't been reviewed for security issues.
+
+DON'T USE IT FOR PRODUCTION!
+****************************************************************************************
+- Generating browser application bundles (phase: setup)...
+✔ Browser application bundle generation complete.
+
+Initial chunk files   | Names         |  Raw size | Estimated transfer size
+main.js               | main          | 872.30 kB |               185.26 kB
+styles.css, styles.js | styles        | 134.32 kB |                20.19 kB
+polyfills.js          | polyfills     |  81.31 kB |                23.75 kB
+runtime.js            | runtime       |   1.28 kB |               676 bytes
+
+                      | Initial total |   1.09 MB |               229.87 kB
+
+Build at: 2025-12-14T03:13:00.205Z - Hash: 2a1b5a49080549d2 - Time: 3631ms
+
+** Angular Live Development Server is listening on 0.0.0.0:4201, open your browser on http://localhost:4201/ **
+
+
+✔ Compiled successfully.
+✔ Browser application bundle generation complete.
+
+
+
+4 unchanged chunks
+
+Build at: 2025-12-14T03:13:02.081Z - Hash: 2a1b5a49080549d2 - Time: 1799ms
+
+✔ Compiled successfully.
+✔ Browser application bundle generation complete.
+
+Initial chunk files | Names   |  Raw size | Estimated transfer size
+main.js             | main    | 872.22 kB |               185.05 kB
+runtime.js          | runtime |   1.28 kB |               666 bytes
+
+2 unchanged chunks
+
+Build at: 2025-12-14T03:15:40.345Z - Hash: 9f4d2a0ae257ea83 - Time: 8340ms
+
+✔ Compiled successfully.

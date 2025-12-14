@@ -3,21 +3,22 @@ import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ClientFormComponent } from '../client-form/client-form.component';
 import { ClientService, Client } from '../../services/client.service';
 
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
 @Component({
   selector: 'app-client-list',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatToolbarModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule],
+  imports: [CommonModule, MatTableModule, MatToolbarModule, MatButtonModule, MatDialogModule, MatSnackBarModule],
   template: `
   <mat-toolbar color="primary">
-    <span>Dashboard</span>
+    <span>Client List</span>
     <span class="spacer"></span>
-    <button mat-raised-button color="accent" (click)="openAddDialog()"><mat-icon>add</mat-icon> Add Client</button>
+    <button mat-raised-button color="accent" (click)="openAddDialog()">Add Client</button>
   </mat-toolbar>
 
   <div class="table-container">
@@ -25,7 +26,9 @@ import { ClientService, Client } from '../../services/client.service';
 
       <ng-container matColumnDef="firstName">
         <th mat-header-cell *matHeaderCellDef> First Name </th>
-        <td mat-cell *matCellDef="let c"> {{ c.firstName }} </td>
+        <td mat-cell *matCellDef="let c">
+          <button mat-button color="primary" (click)="openDetail(c)">{{ c.firstName }}</button>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="lastName">
@@ -43,6 +46,13 @@ import { ClientService, Client } from '../../services/client.service';
         <td mat-cell *matCellDef="let c"> {{ c.sex }} </td>
       </ng-container>
 
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let c">
+          <iframe [src]="getActionUrl(c.id)" class="actions-frame"></iframe>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns; trackBy: trackByIndex"></tr>
     </table>
@@ -52,19 +62,28 @@ import { ClientService, Client } from '../../services/client.service';
     .spacer { flex: 1 1 auto; }
     .table-container { padding: 16px; overflow: auto; }
     table { width: 100%; }
+    .actions-frame { border: none; width: 180px; height: 40px; }
   `]
 })
 export class ClientListComponent implements OnInit {
   private clientService = inject(ClientService);
   private dialog = inject(MatDialog);
   private snack = inject(MatSnackBar);
+  private sanitizer = inject(DomSanitizer);
 
-  displayedColumns = ['firstName', 'lastName', 'dob', 'sex'];
+  displayedColumns = ['firstName', 'lastName', 'dob', 'sex', 'actions'];
   clients: Client[] = [];
 
   ngOnInit(): void {
     this.load();
   }
+
+  // ... (rest of methods)
+
+  getActionUrl(id: number): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`/client-actions/${id}`);
+  }
+
 
   private getRole(): 'Admin' | 'User' {
     const token = localStorage.getItem('token');
@@ -91,6 +110,11 @@ export class ClientListComponent implements OnInit {
 
   openAddDialog(): void {
     const ref = this.dialog.open(ClientFormComponent, { width: '480px' });
+    ref.afterClosed().subscribe((saved: boolean) => { if (saved) this.load(); });
+  }
+
+  openDetail(client: Client): void {
+    const ref = this.dialog.open(ClientFormComponent, { width: '480px', data: { mode: 'edit', client } });
     ref.afterClosed().subscribe((saved: boolean) => { if (saved) this.load(); });
   }
 
