@@ -8,14 +8,33 @@ __pycache__/
 .auth/
 
 # Playwright & Test Reports
+# Limit assets ignore to PlayWrightTest to avoid ignoring Angular src/assets
 report.html
-assets/
+PlayWrightTest/report.html
+PlayWrightTest/assets/
 test-results/
 playwright-report/
 *.log
+*.xml
+.coverage
+htmlcov/
 
 # Node
 node_modules/
+npm-debug.log
+yarn-error.log
+
+# Angular
 .angular/
 dist/
+.sass-cache/
+connect.lock
+coverage/
+libpeerconnection.log
+testem.log
+typings/
+
+# System
 .DS_Store
+Thumbs.db
+

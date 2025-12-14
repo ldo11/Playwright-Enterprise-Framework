@@ -3,18 +3,253 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { sql, getPool } = require('./db');
+const store = require('./store');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 
 // CORS - allow Angular dev server by default
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:4200';
+const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:4201', 'http://127.0.0.1:4201', 'http://localhost:4200'];
 app.use(cors({ origin: corsOrigin, credentials: true }));
 
 app.use(express.json());
 
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Client Management API',
+      version: '0.0.1',
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+      schemas: {
+        User: {
+          type: 'object',
+          properties: {
+            userId: { type: 'integer', format: 'int32' },
+            username: { type: 'string' },
+            role: { type: 'string' },
+          },
+        },
+        Client: {
+          type: 'object',
+          properties: {
+            ClientID: { type: 'integer', format: 'int32' },
+            FirstName: { type: 'string' },
+            LastName: { type: 'string' },
+            DOB: { type: 'string', format: 'date' },
+            Sex: { type: 'string', enum: ['Male', 'Female', 'N/A'] },
+            CreatedByUserID: { type: 'integer', format: 'int32' },
+          },
+        },
+        Error: {
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+          },
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+    paths: {
+      '/api/health': {
+        get: {
+          summary: 'Health check',
+          responses: {
+            200: {
+              description: 'API is healthy',
+            },
+          },
+        },
+      },
+      '/login': {
+        post: {
+          summary: 'Authenticate and obtain JWT token',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    username: { type: 'string' },
+                    password: { type: 'string', format: 'password' },
+                  },
+                  required: ['username', 'password'],
+                },
+                example: {
+                  username: 'user1',
+                  password: '123456',
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Login successful',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      token: { type: 'string' },
+                      user: { $ref: '#/components/schemas/User' },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: 'Missing username or password',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+            401: {
+              description: 'Invalid credentials',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/clients': {
+        get: {
+          summary: 'Get clients',
+          description:
+            'Admin users get all clients. Non-admin users get only their own. Use ?mine=true to force own clients.',
+          parameters: [
+            {
+              name: 'mine',
+              in: 'query',
+              required: false,
+              schema: { type: 'boolean' },
+              description: 'If true, return only clients created by the current user.',
+            },
+          ],
+          security: [
+            {
+              bearerAuth: [],
+            },
+          ],
+          responses: {
+            200: {
+              description: 'List of clients',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/Client' },
+                  },
+                },
+              },
+            },
+            401: {
+              description: 'Missing token',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+            403: {
+              description: 'Invalid or expired token',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+          },
+        },
+        post: {
+          summary: 'Create a new client',
+          security: [
+            {
+              bearerAuth: [],
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    firstName: { type: 'string' },
+                    lastName: { type: 'string' },
+                    dob: { type: 'string', format: 'date' },
+                    sex: { type: 'string', enum: ['Male', 'Female', 'N/A'] },
+                  },
+                  required: ['firstName', 'lastName', 'dob', 'sex'],
+                },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Client created',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Client' },
+                },
+              },
+            },
+            400: {
+              description: 'Validation error',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+            401: {
+              description: 'Missing token',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+            403: {
+              description: 'Invalid or expired token',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  apis: [],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_super_secret_change_me';
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // -----------------------------
 // Auth middleware
@@ -49,19 +284,13 @@ async function loginHandler(req, res) {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ message: 'Username and password are required' });
 
-    const pool = await getPool();
-    const result = await pool
-      .request()
-      .input('username', sql.VarChar(100), username)
-      .query('SELECT TOP 1 UserID, Username, PasswordHash, Role FROM Users WHERE Username = @username');
+    const user = await store.getUserByUsername(username);
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
-    const row = result.recordset?.[0];
-    if (!row) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const isMatch = await bcrypt.compare(password, row.PasswordHash);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
-    const payload = { userId: row.UserID, username: row.Username, role: row.Role };
+    const payload = { userId: user.id, username: user.username, role: user.role };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
 
     return res.json({ token, user: payload });
@@ -76,24 +305,10 @@ app.post(['/api/login', '/login'], loginHandler);
 async function getClientsHandler(req, res) {
   try {
     const { userId, role } = req.user || {};
-    const lowerRole = (role || '').toString().toLowerCase();
     const mineOnly = req.query.mine === 'true';
 
-    const pool = await getPool();
-    if (lowerRole === 'admin' && !mineOnly) {
-      const result = await pool
-        .request()
-        .query('SELECT ClientID, FirstName, LastName, DOB, Sex, CreatedByUserID FROM Clients ORDER BY ClientID DESC');
-      return res.json(result.recordset || []);
-    } else {
-      const result = await pool
-        .request()
-        .input('userId', sql.Int, userId)
-        .query(
-          'SELECT ClientID, FirstName, LastName, DOB, Sex, CreatedByUserID FROM Clients WHERE CreatedByUserID = @userId ORDER BY ClientID DESC'
-        );
-      return res.json(result.recordset || []);
-    }
+    const clients = await store.getClientsForUser(userId, role, mineOnly);
+    return res.json(clients || []);
   } catch (err) {
     console.error('Get clients error:', err);
     return res.status(500).json({ message: 'Internal server error' });
@@ -104,6 +319,7 @@ app.get(['/api/clients', '/clients'], authenticateToken, getClientsHandler);
 // POST /api/clients and /clients
 async function createClientHandler(req, res) {
   try {
+    console.log('POST /clients payload:', req.body);
     const { userId } = req.user || {};
     const { firstName, lastName, dob, sex } = req.body || {};
 
@@ -115,22 +331,15 @@ async function createClientHandler(req, res) {
     const dobDate = new Date(dob);
     if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'dob must be a valid date' });
 
-    const pool = await getPool();
-    const result = await pool
-      .request()
-      .input('firstName', sql.VarChar(100), firstName)
-      .input('lastName', sql.VarChar(100), lastName)
-      .input('dob', sql.Date, dobDate)
-      .input('sex', sql.VarChar(10), sex)
-      .input('createdBy', sql.Int, userId)
-      .query(
-        `INSERT INTO Clients (FirstName, LastName, DOB, Sex, CreatedByUserID)
-         OUTPUT INSERTED.ClientID, INSERTED.FirstName, INSERTED.LastName, INSERTED.DOB, INSERTED.Sex, INSERTED.CreatedByUserID
-         VALUES (@firstName, @lastName, @dob, @sex, @createdBy)`
-      );
+    const created = await store.createClient({
+      firstName,
+      lastName,
+      dob: dobDate.toISOString().substring(0, 10),
+      sex,
+      createdByUserId: userId,
+    });
 
-    const inserted = result.recordset?.[0];
-    return res.status(201).json(inserted);
+    return res.status(201).json(created);
   } catch (err) {
     console.error('Create client error:', err);
     return res.status(500).json({ message: 'Internal server error' });
@@ -138,9 +347,100 @@ async function createClientHandler(req, res) {
 }
 app.post(['/api/clients', '/clients'], authenticateToken, createClientHandler);
 
+// GET /api/clients/:id and /clients/:id
+async function getClientByIdHandler(req, res) {
+  try {
+    const { userId, role } = req.user || {};
+    const { id } = req.params || {};
+
+    const client = await store.getClientById(id);
+    if (!client) return res.status(404).json({ message: 'Client not found' });
+
+    const isAdmin = (role || '').toString().toLowerCase() === 'admin';
+    if (!isAdmin && client.createdByUserId !== userId) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    return res.json(client);
+  } catch (err) {
+    console.error('Get client by id error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+app.get(['/api/clients/:id', '/clients/:id'], authenticateToken, getClientByIdHandler);
+
+// PUT /api/clients/:id and /clients/:id
+async function updateClientHandler(req, res) {
+  try {
+    const { userId, role } = req.user || {};
+    const { id } = req.params || {};
+    const { firstName, lastName, dob, sex } = req.body || {};
+
+    if (!firstName || !lastName || !dob || !sex)
+      return res.status(400).json({ message: 'firstName, lastName, dob, and sex are required' });
+
+    if (!isValidSex(sex)) return res.status(400).json({ message: "sex must be 'Male', 'Female', or 'N/A'" });
+
+    const dobDate = new Date(dob);
+    if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'dob must be a valid date' });
+
+    const existing = await store.getClientById(id);
+    if (!existing) return res.status(404).json({ message: 'Client not found' });
+
+    const isAdmin = (role || '').toString().toLowerCase() === 'admin';
+    if (!isAdmin && existing.createdByUserId !== userId) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const updated = await store.updateClient(id, {
+      firstName,
+      lastName,
+      dob: dobDate.toISOString().substring(0, 10),
+      sex,
+    });
+
+    if (!updated) return res.status(404).json({ message: 'Client not found' });
+
+    return res.json(updated);
+  } catch (err) {
+    console.error('Update client error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+app.put(['/api/clients/:id', '/clients/:id'], authenticateToken, updateClientHandler);
+
+// DELETE /api/clients/:id and /clients/:id
+async function deleteClientHandler(req, res) {
+  try {
+    const { userId, role } = req.user || {};
+    const { id } = req.params || {};
+
+    const existing = await store.getClientById(id);
+    if (!existing) return res.status(404).json({ message: 'Client not found' });
+
+    const isAdmin = (role || '').toString().toLowerCase() === 'admin';
+    if (!isAdmin && existing.createdByUserId !== userId) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const deleted = await store.deleteClient(id);
+    if (!deleted) return res.status(404).json({ message: 'Client not found or could not be deleted' });
+
+    return res.json({ message: 'Client deleted' });
+  } catch (err) {
+    console.error('Delete client error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+app.delete(['/api/clients/:id', '/clients/:id'], authenticateToken, deleteClientHandler);
+
 // -----------------------------
 // Start server
 // -----------------------------
-app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`API listening on http://0.0.0.0:${PORT}`);
+  });
+}
+
+module.exports = app;
