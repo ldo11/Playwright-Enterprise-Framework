@@ -8,6 +8,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ClientFormComponent } from '../client-form/client-form.component';
 import { ClientService, Client } from '../../services/client.service';
 
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
 @Component({
   selector: 'app-client-list',
   standalone: true,
@@ -44,6 +46,13 @@ import { ClientService, Client } from '../../services/client.service';
         <td mat-cell *matCellDef="let c"> {{ c.sex }} </td>
       </ng-container>
 
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let c">
+          <iframe [src]="getActionUrl(c.id)" class="actions-frame"></iframe>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns; trackBy: trackByIndex"></tr>
     </table>
@@ -53,19 +62,28 @@ import { ClientService, Client } from '../../services/client.service';
     .spacer { flex: 1 1 auto; }
     .table-container { padding: 16px; overflow: auto; }
     table { width: 100%; }
+    .actions-frame { border: none; width: 180px; height: 40px; }
   `]
 })
 export class ClientListComponent implements OnInit {
   private clientService = inject(ClientService);
   private dialog = inject(MatDialog);
   private snack = inject(MatSnackBar);
+  private sanitizer = inject(DomSanitizer);
 
-  displayedColumns = ['firstName', 'lastName', 'dob', 'sex'];
+  displayedColumns = ['firstName', 'lastName', 'dob', 'sex', 'actions'];
   clients: Client[] = [];
 
   ngOnInit(): void {
     this.load();
   }
+
+  // ... (rest of methods)
+
+  getActionUrl(id: number): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`/client-actions/${id}`);
+  }
+
 
   private getRole(): 'Admin' | 'User' {
     const token = localStorage.getItem('token');

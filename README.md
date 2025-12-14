@@ -35,37 +35,30 @@ Playwright-Enterprise-Framework/
 - Browsers installed for Playwright
 
 ## Setup
+
+macOS/Linux:
 ```bash
 # 1) Create and activate a virtual environment
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
 
 # 2) Install Python dependencies
 pip install -r requirements.txt
 
 # 3) Install Playwright browsers
-python -m playwright install       # Linux CI may also need: python -m playwright install-deps
+python3 -m playwright install
+# Linux CI may also need:
+# python3 -m playwright install-deps
 ```
 
-## Configuration (Environment Variables)
-Set the following to target the demo app/API and authenticate without UI:
-- `DEMO_BASE_URL` (default: `https://practice.expandtesting.com`)
-- `DEMO_APP_URL` (default: `${DEMO_BASE_URL}/notes/app`)
-- `DEMO_LOGIN_API_PATH` (default: `/notes/api/auth/login`)
-- `DEMO_AUTH_COOKIE_NAME` (default: `token`)
-- `DEMO_COOKIE_DOMAIN` (default: `practice.expandtesting.com`)
-
-Authentication options (pick one):
-- `DEMO_EMAIL` and `DEMO_PASSWORD` for API login
-- or `DEMO_JWT` to synthesize the cookie directly
-
-Example (macOS/Linux):
+Windows (PowerShell or cmd):
 ```bash
-export DEMO_EMAIL="your_email@example.com"
-export DEMO_PASSWORD="your_password"
-# Optional overrides:
-# export DEMO_BASE_URL="https://practice.expandtesting.com"
+py -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+py -m playwright install
 ```
+
 
 ## How It Works: API Login Bypass
 1. On first use per worker, `conftest.py` calls the demo API login endpoint.
@@ -134,6 +127,13 @@ pytest -n auto --browser chromium --html=reports/report.html --self-contained-ht
 - "No cookies in storageState": Your API may return a token only; the framework synthesizes the cookie automatically if token fields are present.
 - Certificate/network issues: The request context ignores HTTPS errors; ensure your network/Proxy allows the call.
 - Playwright not found: Re-run `pip install -r requirements.txt` and `python -m playwright install`.
+
+- "zsh: command not found: python" (macOS):
+  - Use `python3` instead of `python` (e.g., `python3 -m venv .venv`, `python3 -m playwright install`).
+  - If `python3` is also missing, install Python via Homebrew: `brew install python`.
+  - If Homebrew is not installed: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`.
+  - Alternatively, install Apple Command Line Tools: `xcode-select --install` (provides a system Python in some cases).
+  - Advanced users may prefer `pyenv`: `brew install pyenv`, then `pyenv install 3.12.6` and set a local version.
 
 ## Why This Is Production-Ready
 - Stable, fast tests by avoiding UI login.
@@ -307,7 +307,7 @@ Under `PlayWrightTest/` there is a Python + Playwright + Pytest test harness. It
 ### Running the Playwright tests
 ```bash
 cd PlayWrightTest
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 

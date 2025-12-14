@@ -23,8 +23,68 @@ from config.settings import (
     LOGIN_API_PATH,
     AUTH_COOKIE_NAME,
     COOKIE_DOMAIN,
+    API_USERNAME,
+    API_PASSWORD,
 )
 from utils.auth import create_authenticated_storage_state
+
+
+# -------------------------------
+# API Fixtures
+# -------------------------------
+@pytest.fixture(scope="session")
+def api_token(playwright: Playwright) -> str:
+    """
+    Get a valid JWT token for API interactions.
+    """
+    request_context = playwright.request.new_context(base_url=BASE_URL)
+    response = request_context.post(
+        LOGIN_API_PATH,
+        data={"username": API_USERNAME, "password": API_PASSWORD},
+    )
+    if not response.ok:
+        raise RuntimeError(f"Failed to get API token: {response.status} {response.text()}")
+    
+    data = response.json()
+    token = data.get("token") or data.get("access_token")
+    if not token:
+        raise RuntimeError("No token found in login response")
+    
+    return token
+
+@pytest.fixture(scope="session")
+def api_context(playwright: Playwright, api_token: str) -> Generator[APIRequestContext, None, None]:
+    """
+    Session-scoped authenticated APIRequestContext.
+    """
+    headers = {"Authorization": f"Bearer {api_token}"}
+    context = playwright.request.new_context(base_url=BASE_URL, extra_http_headers=headers)
+    yield context
+    context.dispose()
+
+@pytest.fixture
+def new_client(api_context: APIRequestContext) -> Generator[dict, None, None]:
+    """
+    Create a new client via API before test and return its data.
+    """
+    import time
+    # Unique suffix to avoid collisions
+    suffix = str(int(time.time() * 1000))[-6:]
+    client_data = {
+        "firstName": f"Auto{suffix}",
+        "lastName": "Test",
+        "dob": "1990-01-01",
+        "sex": "Male",
+    }
+    
+    response = api_context.post("/clients", data=client_data)
+    if not response.ok:
+        pytest.fail(f"Failed to create new client fixture: {response.text()}")
+        
+    client = response.json()
+    yield client
+    # Clean up (best effort)
+    api_context.delete(f"/clients/{client['id']}")
 
 
 # -------------------------------
@@ -42,7 +102,25 @@ def session_browser(playwright: Playwright, pytestconfig: pytest.Config) -> Gene
         * --browser [chromium|firefox|webkit]
         * --headed (otherwise runs headless by default)
     """
-    browser_name = pytestconfig.getoption("--browser") or "chromium"
+    browser_opt = pytestconfig.getoption("--browser") or "chromium"
+    # Normalize --browser which can be: Enum, string, or a list/tuple (select first)
+    def _normalize_browser_name(opt):
+        try:
+            # If list/tuple provided, take the first value
+            if isinstance(opt, (list, tuple)):
+                opt = opt[0] if opt else "chromium"
+            # Prefer Enum.name, then Enum.value, else string
+            if hasattr(opt, "name"):
+                name = opt.name
+            elif hasattr(opt, "value"):
+                name = opt.value
+            else:
+                name = str(opt)
+            return str(name).strip().lower()
+        except Exception:
+            return "chromium"
+
+    browser_name = _normalize_browser_name(browser_opt)
     headed = pytestconfig.getoption("--headed")
     browser_factory = getattr(playwright, browser_name)
     browser = browser_factory.launch(headless=not headed)

@@ -14,7 +14,7 @@ export interface Client {
 
 @Injectable({ providedIn: 'root' })
 export class ClientService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = 'http://127.0.0.1:3001';
 
   constructor(private http: HttpClient) {}
 
@@ -46,5 +46,9 @@ export class ClientService {
 
   getClient(id: number): Observable<Client> {
     return this.http.get<Client>(`${this.baseUrl}/clients/${id}`);
+  }
+
+  deleteClient(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/clients/${id}`);
   }
 }

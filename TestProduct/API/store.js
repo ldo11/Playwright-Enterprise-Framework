@@ -104,10 +104,27 @@ async function updateClient(id, input) {
   return updated;
 }
 
+async function deleteClient(id) {
+  const data = await readData();
+  const intId = Number(id);
+  if (!Number.isFinite(intId)) return false;
+
+  const clients = data.clients || [];
+  const initialLength = clients.length;
+  const filtered = clients.filter((c) => c.id !== intId);
+
+  if (filtered.length === initialLength) return false;
+
+  data.clients = filtered;
+  await writeData(data);
+  return true;
+}
+
 module.exports = {
   getUserByUsername,
   getClientsForUser,
   createClient,
   getClientById,
   updateClient,
+  deleteClient,
 };

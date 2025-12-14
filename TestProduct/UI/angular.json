@@ -44,18 +44,17 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "client-management-ui:build"
+            "buildTarget": "client-management-ui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "client-management-ui:build:production"
+              "buildTarget": "client-management-ui:build:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "client-management-ui",
   "cli": {
     "analytics": "468514b0-d1a7-4e24-974d-3ca2b2e7938d"
   }

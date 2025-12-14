@@ -10,7 +10,7 @@ const swaggerUi = require('swagger-ui-express');
 const app = express();
 
 // CORS - allow Angular dev server by default
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:4200';
+const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:4201', 'http://127.0.0.1:4201', 'http://localhost:4200'];
 app.use(cors({ origin: corsOrigin, credentials: true }));
 
 app.use(express.json());
@@ -246,7 +246,7 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_super_secret_change_me';
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -319,6 +319,7 @@ app.get(['/api/clients', '/clients'], authenticateToken, getClientsHandler);
 // POST /api/clients and /clients
 async function createClientHandler(req, res) {
   try {
+    console.log('POST /clients payload:', req.body);
     const { userId } = req.user || {};
     const { firstName, lastName, dob, sex } = req.body || {};
 
@@ -408,12 +409,37 @@ async function updateClientHandler(req, res) {
 }
 app.put(['/api/clients/:id', '/clients/:id'], authenticateToken, updateClientHandler);
 
+// DELETE /api/clients/:id and /clients/:id
+async function deleteClientHandler(req, res) {
+  try {
+    const { userId, role } = req.user || {};
+    const { id } = req.params || {};
+
+    const existing = await store.getClientById(id);
+    if (!existing) return res.status(404).json({ message: 'Client not found' });
+
+    const isAdmin = (role || '').toString().toLowerCase() === 'admin';
+    if (!isAdmin && existing.createdByUserId !== userId) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const deleted = await store.deleteClient(id);
+    if (!deleted) return res.status(404).json({ message: 'Client not found or could not be deleted' });
+
+    return res.json({ message: 'Client deleted' });
+  } catch (err) {
+    console.error('Delete client error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+app.delete(['/api/clients/:id', '/clients/:id'], authenticateToken, deleteClientHandler);
+
 // -----------------------------
 // Start server
 // -----------------------------
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`API listening on http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`API listening on http://0.0.0.0:${PORT}`);
   });
 }
 
