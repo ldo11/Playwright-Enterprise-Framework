@@ -1,47 +1,49 @@
 import pytest
 from playwright.sync_api import APIRequestContext, expect
+from utils.step import step
 
 @pytest.mark.api
-def test_crud_client(api_context: APIRequestContext):
+def test_verify_client_crud_operations_when_interacting_via_api_with_valid_data(api_context: APIRequestContext):
     import uuid
     unique_id = str(uuid.uuid4())[:8]
+    client_id = None
     
-    # 1. Create
-    client_data = {
-        "firstName": f"CRUD_{unique_id}",
-        "lastName": "Test",
-        "dob": "1990-01-01",
-        "sex": "Male"
-    }
-    response = api_context.post("/clients", data=client_data)
-    assert response.ok, f"Create failed: {response.text()}"
-    created_client = response.json()
-    client_id = created_client["id"]
-    assert created_client["firstName"] == f"CRUD_{unique_id}"
+    with step("Create a new client with valid data"):
+        client_data = {
+            "firstName": f"CRUD_{unique_id}",
+            "lastName": "Test",
+            "dob": "1990-01-01",
+            "sex": "Male"
+        }
+        response = api_context.post("/clients", data=client_data)
+        assert response.ok, f"Create failed: {response.text()}"
+        created_client = response.json()
+        client_id = created_client["id"]
+        assert created_client["firstName"] == f"CRUD_{unique_id}"
 
-    # 2. Get
-    response = api_context.get(f"/clients/{client_id}")
-    assert response.ok
-    fetched = response.json()
-    assert fetched["id"] == client_id
+    with step(f"Retrieve the client by ID: {client_id}"):
+        response = api_context.get(f"/clients/{client_id}")
+        assert response.ok, f"Get failed: {response.text()}"
+        fetched = response.json()
+        assert fetched["id"] == client_id
 
-    # 3. Update (PUT)
-    update_data = {
-        "firstName": f"CRUD_Updated_{unique_id}",
-        "lastName": "Test",
-        "dob": "1990-01-01",
-        "sex": "Female"
-    }
-    response = api_context.put(f"/clients/{client_id}", data=update_data)
-    assert response.ok, f"Update failed: {response.text()}"
-    updated = response.json()
-    assert updated["firstName"] == f"CRUD_Updated_{unique_id}"
-    assert updated["sex"] == "Female"
+    with step("Update the client details (Change sex to Female)"):
+        update_data = {
+            "firstName": f"CRUD_Updated_{unique_id}",
+            "lastName": "Test",
+            "dob": "1990-01-01",
+            "sex": "Female"
+        }
+        response = api_context.put(f"/clients/{client_id}", data=update_data)
+        assert response.ok, f"Update failed: {response.text()}"
+        updated = response.json()
+        assert updated["firstName"] == f"CRUD_Updated_{unique_id}"
+        assert updated["sex"] == "Female"
 
-    # 4. Delete
-    response = api_context.delete(f"/clients/{client_id}")
-    assert response.ok, f"Delete failed: {response.text()}"
+    with step("Delete the client"):
+        response = api_context.delete(f"/clients/{client_id}")
+        assert response.ok, f"Delete failed: {response.text()}"
 
-    # 5. Verify Delete
-    response = api_context.get(f"/clients/{client_id}")
-    assert response.status == 404
+    with step("Verify the client is successfully deleted (404 Expected)"):
+        response = api_context.get(f"/clients/{client_id}")
+        assert response.status == 404, f"Expected 404 but got {response.status}"

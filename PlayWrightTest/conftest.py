@@ -27,6 +27,91 @@ from config.settings import (
     API_PASSWORD,
 )
 from utils.auth import create_authenticated_storage_state
+from utils.step import current_steps
+
+
+# -------------------------------
+# Reporting & Step Tracking
+# -------------------------------
+@pytest.fixture(autouse=True)
+def reset_step_history():
+    """
+    Reset the step history before each test runs.
+    This ensures that steps from previous tests do not leak into the current one.
+    """
+    current_steps.clear()
+    yield
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """
+    Hook to add test steps to the HTML report.
+    """
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call":
+        # Only add steps if we have them and it's the main call phase
+        if current_steps:
+            # Construct HTML table for steps
+            # We use inline styles for simplicity in the report
+            html = """
+            <div style="margin: 10px 0;">
+                <h4 style="margin-bottom: 5px;">Test Execution Steps</h4>
+                <table style="width:100%; border-collapse: collapse; font-size: 14px; border: 1px solid #ddd;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2; text-align: left;">
+                            <th style="padding: 8px; border: 1px solid #ddd;">Step Description</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; width: 100px;">Status</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Details / Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            """
+            
+            for step in current_steps:
+                status = step["status"]
+                name = step["name"]
+                error = step["error"]
+                
+                # Style based on status
+                if status == "passed":
+                    status_style = "color: green; font-weight: bold;"
+                    row_style = ""
+                elif status == "failed":
+                    status_style = "color: red; font-weight: bold;"
+                    row_style = "background-color: #fff0f0;"
+                else:
+                    status_style = "color: orange;"
+                    row_style = ""
+                
+                error_html = f"<pre style='margin: 0; white-space: pre-wrap; color: red;'>{error}</pre>" if error else "-"
+                
+                html += f"""
+                        <tr style="{row_style}">
+                            <td style="padding: 8px; border: 1px solid #ddd;">{name}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; {status_style}">{status.upper()}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{error_html}</td>
+                        </tr>
+                """
+            
+            html += """
+                    </tbody>
+                </table>
+            </div>
+            """
+            
+            # Add to report extras using pytest-html's extras module
+            # We import here to avoid failure if pytest-html is not installed, 
+            # although it's required for this feature.
+            try:
+                from pytest_html import extras
+                if not hasattr(report, "extras"):
+                    report.extras = []
+                report.extras.append(extras.html(html))
+            except ImportError:
+                pass
 
 
 # -------------------------------
