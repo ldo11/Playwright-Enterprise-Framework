@@ -22,10 +22,11 @@ class HomePage:
         self.page.goto(APP_URL)
 
     def is_logged_in(self) -> bool:
-        """Heuristic check: dashboard toolbar and Add Client button are visible."""
+        """Heuristic check: dashboard toolbar, Add Client button, and Logout button are visible."""
         try:
             expect(self.client_list_toolbar).to_be_visible(timeout=5000)
             expect(self.add_client_button).to_be_visible(timeout=5000)
+            expect(self.logout_button).to_be_visible(timeout=5000)
             return True
         except Exception:
             return False
@@ -35,38 +36,37 @@ class HomePage:
         self.add_client_button.click()
         self.page.get_by_label("First Name").fill(first_name)
         self.page.get_by_label("Last Name").fill(last_name)
-        # Type the date to ensure Angular detects input events properly
-        self.page.get_by_label("Date of Birth").click()
-        self.page.get_by_label("Date of Birth").fill("")
-        self.page.get_by_label("Date of Birth").type(dob)
-        self.page.get_by_label("Date of Birth").press("Enter")
         
-        # Angular Material 'mat-select' is not a native <select>, so we must:
-        # 1. Click the trigger to open the dropdown
-        # 2. Click the option by name
-        # Using locator by formControlName to be precise, as label might have '*' suffix
+        # Robust date handling: click, clear, type (simulate user input for mask)
+        dob_field = self.page.get_by_label("Date of Birth")
+        dob_field.click()
+        dob_field.fill("")
+        dob_field.type(dob, delay=50) # Type slowly to ensure mask captures it
+        
+        # Angular Material 'mat-select'
         self.page.locator("mat-select[formControlName='sex']").click()
         self.page.get_by_role("option", name=sex, exact=True).click()
         
         save_btn = self.page.get_by_role("button", name="Save")
-        if save_btn.is_disabled():
-            # Debug: print errors
-            print("DEBUG: Save button is disabled. Checking for errors...")
-            # Check for mat-error
+        
+        # Wait for button to be enabled (implies form is valid)
+        try:
+            expect(save_btn).to_be_enabled(timeout=2000)
+        except AssertionError:
+            print("DEBUG: Save button is disabled. Checking validation errors...")
             errors = self.page.locator("mat-error").all_inner_texts()
-            print(f"DEBUG: mat-errors found: {errors}")
-            
+            print(f"DEBUG: Found validation errors: {errors}")
+            # Fail early if form is invalid
+            raise
+
         save_btn.click()
         
         # Check for error snackbar
         try:
-            # Short wait for potential error
             snackbar = self.page.locator("simple-snack-bar").first
-            if snackbar.is_visible(timeout=2000):
+            if snackbar.is_visible(timeout=3000):
                 text = snackbar.inner_text()
-                if "Failed" in text or "Error" in text:
-                    print(f"DEBUG: Snackbar Error: {text}")
-                    # If error, the dialog won't close, so this explains the failure.
+                print(f"DEBUG: Snackbar detected: {text}")
         except:
             pass
 

@@ -1,0 +1,105 @@
+/Users/luat/Main/Playwright-Enterprise-Framework/PlayWrightTest/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+bringing up nodes...
+bringing up nodes...
+
+F
+=================================== FAILURES ===================================
+___________________ TestTestProductUI.test_add_client_via_ui ___________________
+[gw0] darwin -- Python 3.9.6 /Users/luat/Main/Playwright-Enterprise-Framework/PlayWrightTest/.venv/bin/python
+
+self = <test_testproduct_ui.TestTestProductUI object at 0x110739a30>
+auth_page = <Page url='http://localhost:4200/dashboard'>
+api_context = <playwright._impl._fetch.APIRequestContext object at 0x110a57250>
+
+    def test_add_client_via_ui(self, auth_page, api_context):
+        """Create a client via the UI and assert its first name appears as a clickable entry."""
+        # Capture browser console logs for debugging
+        auth_page.on("console", lambda msg: print(f"BROWSER CONSOLE: {msg.type}: {msg.text}"))
+        auth_page.on("requestfailed", lambda req: print(f"REQUEST FAILED: {req.url} - {req.failure}"))
+        auth_page.on("response", lambda res: print(f"RESPONSE: {res.url} - {res.status}"))
+    
+        home = HomePage(auth_page)
+        home.goto()
+    
+        assert home.is_logged_in(), "Precondition: user should be logged in."
+    
+        # Unique name to ensure we find the right one
+        import uuid
+        unique_suffix = str(uuid.uuid4())[:8]
+        first_name = f"Playwright_{unique_suffix}"
+    
+        try:
+            # Using MM/DD/YYYY for UI input as Angular Material default locale often expects this
+>           home.add_client(first_name, "User", "01/01/2000", "Male")
+
+tests/test_testproduct_ui.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pages.home_page.HomePage object at 0x110a74fd0>
+first_name = 'Playwright_9aac5a76', last_name = 'User', dob = '01/01/2000'
+sex = 'Male'
+
+    def add_client(self, first_name: str, last_name: str, dob: str, sex: str = "Male") -> None:
+        """Create a new client through the UI form."""
+        self.add_client_button.click()
+        self.page.get_by_label("First Name").fill(first_name)
+        self.page.get_by_label("Last Name").fill(last_name)
+    
+        # Robust date handling: click, clear, fill, enter
+        dob_field = self.page.get_by_label("Date of Birth")
+        dob_field.click()
+        dob_field.fill(dob)
+        dob_field.press("Enter")
+    
+        # Angular Material 'mat-select'
+        self.page.locator("mat-select[formControlName='sex']").click()
+        self.page.get_by_role("option", name=sex, exact=True).click()
+    
+        save_btn = self.page.get_by_role("button", name="Save")
+    
+        # Check if button is disabled (debugging)
+        if save_btn.is_disabled():
+            print("DEBUG: Save button is disabled. Checking validation errors...")
+            # Check for mat-error elements
+            errors = self.page.locator("mat-error").all_inner_texts()
+            if errors:
+                print(f"DEBUG: Found validation errors: {errors}")
+            else:
+                print("DEBUG: No mat-error found, but button is disabled.")
+    
+        save_btn.click()
+    
+        # Check for error snackbar
+        try:
+            # Short wait for potential error
+            snackbar = self.page.locator("simple-snack-bar").first
+            if snackbar.is_visible(timeout=2000):
+                text = snackbar.inner_text()
+                print(f"DEBUG: Snackbar detected: {text}")
+        except:
+            pass
+    
+        # Wait for dialog to close to ensure client is added and list is refreshing
+>       expect(self.page.get_by_role("dialog")).to_be_hidden()
+E       AssertionError: Locator expected to be hidden
+E       Actual value: visible 
+E       Call log:
+E         - Expect "to_be_hidden" with timeout 5000ms
+E         - waiting for get_by_role("dialog")
+E           9 × locator resolved to <mat-dialog-container tabindex="-1" role="dialog" aria-modal="false" id="mat-mdc-dialog-0" aria-labelledby="mat-mdc-dialog-title-0" class="mat-mdc-dialog-container mdc-dialog cdk-dialog-container mat-mdc-dialog-container-with-actions mdc-dialog--open">…</mat-dialog-container>
+E             - unexpected value "visible"
+
+pages/home_page.py:74: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.9/site-packages/urllib3/__init__.py:35
+.venv/lib/python3.9/site-packages/urllib3/__init__.py:35
+  /Users/luat/Main/Playwright-Enterprise-Framework/PlayWrightTest/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_testproduct_ui.py::TestTestProductUI::test_add_client_via_ui
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+1 failed, 2 warnings in 8.14s

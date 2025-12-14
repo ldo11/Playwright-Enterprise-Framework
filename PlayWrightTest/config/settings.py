@@ -8,7 +8,7 @@ BASE_URL = os.getenv("TESTPRODUCT_API_BASE_URL", "http://127.0.0.1:3001")
 
 # Web app entry (authenticated area) for the Angular TestProduct UI
 # e.g. http://localhost:4200/dashboard
-UI_BASE_URL = os.getenv("TESTPRODUCT_UI_BASE_URL", "http://127.0.0.1:4201")
+UI_BASE_URL = os.getenv("TESTPRODUCT_UI_BASE_URL", "http://localhost:4200")
 APP_URL = os.getenv("TESTPRODUCT_APP_URL", f"{UI_BASE_URL.rstrip('/')}/dashboard")
 
 # API endpoint path for login (combined with BASE_URL)

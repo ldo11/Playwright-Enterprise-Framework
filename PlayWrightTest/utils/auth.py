@@ -75,10 +75,6 @@ def create_authenticated_storage_state(
         _write_storage_state_local_storage(Path(storage_path), cookie_domain, auth_cookie_name, jwt_token)
         return True
 
-    # Force override if it looks like localhost:4200 (legacy default) to ensure tests run against current environment
-    if "localhost:4200" in cookie_domain:
-        cookie_domain = "http://127.0.0.1:4201"
-
     # If we lack both creds and token, cannot proceed.
     if not (username and password):
         return False

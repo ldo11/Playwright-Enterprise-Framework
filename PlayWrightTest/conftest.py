@@ -67,11 +67,11 @@ def new_client(api_context: APIRequestContext) -> Generator[dict, None, None]:
     """
     Create a new client via API before test and return its data.
     """
-    import time
-    # Unique suffix to avoid collisions
-    suffix = str(int(time.time() * 1000))[-6:]
+    import uuid
+    # Unique suffix to avoid collisions in parallel execution
+    unique_id = str(uuid.uuid4())[:8]
     client_data = {
-        "firstName": f"Auto{suffix}",
+        "firstName": f"Auto{unique_id}",
         "lastName": "Test",
         "dob": "1990-01-01",
         "sex": "Male",
@@ -83,8 +83,11 @@ def new_client(api_context: APIRequestContext) -> Generator[dict, None, None]:
         
     client = response.json()
     yield client
-    # Clean up (best effort)
-    api_context.delete(f"/clients/{client['id']}")
+    
+    # Teardown: Clean up (best effort)
+    delete_response = api_context.delete(f"/clients/{client['id']}")
+    if not delete_response.ok:
+        print(f"Warning: Failed to tear down client {client['id']}: {delete_response.status}")
 
 
 # -------------------------------
