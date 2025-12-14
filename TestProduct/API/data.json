@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "user1",
+      "passwordHash": "$2a$10$UKldkH2C7spmEpSl34Fd9uEoU5WlDkhXDZqFhrGbXpO1gAKekI5.m",
+      "role": "Admin"
+    }
+  ],
+  "clients": [
+    {
+      "id": 1,
+      "firstName": "abc",
+      "lastName": "df",
+      "dob": "1983-12-05",
+      "sex": "Male",
+      "createdByUserId": 1
+    }
+  ]
+}

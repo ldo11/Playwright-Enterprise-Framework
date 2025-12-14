@@ -1,0 +1,21 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.auth/
+
+# Playwright & Test Reports
+report.html
+assets/
+test-results/
+playwright-report/
+*.log
+
+# Node
+node_modules/
+.angular/
+dist/
+.DS_Store
