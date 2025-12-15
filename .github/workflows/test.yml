@@ -62,7 +62,7 @@ jobs:
     - name: Wait for Services
       run: |
         echo "Waiting for API to be ready..."
-        timeout 60s bash -c 'until curl -s http://127.0.0.1:3001/api/health > /dev/null; do sleep 2; done'
+        timeout 60s bash -c 'until curl -s http://127.0.0.1:8000/api/health > /dev/null; do sleep 2; done'
         echo "API is ready!"
         
         echo "Waiting for UI to be ready..."
@@ -72,7 +72,7 @@ jobs:
     - name: Run Playwright Tests
       working-directory: PlayWrightTest
       env:
-        TESTPRODUCT_API_BASE_URL: http://127.0.0.1:3001
+        TESTPRODUCT_API_BASE_URL: http://127.0.0.1:8000
         TESTPRODUCT_UI_BASE_URL: http://127.0.0.1:4200
         # Ensure CI uses headless mode (default in pytest.ini is headless unless --headed passed)
       run: pytest --html=report.html
