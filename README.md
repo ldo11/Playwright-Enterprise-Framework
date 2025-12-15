@@ -9,6 +9,49 @@ Production-ready Python + Playwright + Pytest automation framework showcasing Pa
 - **Config via env vars**: No secrets in code. Easily switch environments.
 - **Integrated Test Product**: Includes a local Angular UI and Node.js API for full-stack testing.
 
+## Test Design Patterns (Interview Notes)
+
+### Architecture / Patterns
+- **Page Object Model (POM)**
+  - UI interactions are encapsulated in Page Objects under `PlayWrightTest/pages/`.
+  - Tests call higher-level Page methods instead of low-level selectors, improving readability and maintainability.
+
+- **Fixture-driven test composition (Pytest)**
+  - Shared setup is centralized in `PlayWrightTest/conftest.py`.
+  - Examples: authenticated API context (`api_context`), authenticated UI page (`auth_page`), test data factories (e.g. `new_client`).
+
+- **Arrange / Act / Assert with explicit step logging**
+  - Tests follow a clear flow with meaningful checkpoints using the `step(...)` context manager (`PlayWrightTest/utils/step.py`).
+  - Step history is attached to the HTML report via `pytest-html` to make failures easier to diagnose.
+
+### Stability & Maintainability Techniques
+- **Environment-based configuration**
+  - URLs/credentials are read from environment variables (`PlayWrightTest/config/settings.py`) so the same suite can run locally and in CI.
+- **Single source of truth for base URLs**
+  - Tests reference `BASE_URL`/`UI_BASE_URL` instead of hardcoded endpoints to avoid CI/local drift.
+
+## Performance Techniques (How the suite runs fast)
+
+- **API-based authentication bypass (no UI login)**
+  - Authentication is performed via API (`POST /login`) and injected into the browser context.
+  - This removes the slowest UI step from most tests and reduces flake.
+
+- **Reusing authenticated storageState per worker**
+  - A per-worker `storageState-<worker>.json` is created once and reused across tests.
+  - Enables safe parallel execution without session collisions.
+
+- **Session-scoped browser instance**
+  - A single Browser is launched per test session, while each test uses a fresh Context/Page.
+  - This reduces startup overhead while keeping isolation.
+
+- **Parallel execution with pytest-xdist**
+  - Runs with multiple workers (default configured in `pytest.ini`).
+  - Combined with per-worker storageState, this improves throughput safely.
+
+- **Lightweight test data creation/cleanup**
+  - Tests create their own data (API CRUD) and attempt best-effort cleanup in fixtures.
+  - Reduces inter-test coupling and makes reruns predictable.
+
 ## Directory Structure
 ```text
 Playwright-Enterprise-Framework/
