@@ -5,7 +5,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatIconModule } from '@angular/material/icon';
 import { ClientFormComponent } from '../client-form/client-form.component';
 import { ClientService, Client } from '../../services/client.service';
 
@@ -14,12 +13,12 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 @Component({
   selector: 'app-client-list',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatToolbarModule, MatButtonModule, MatDialogModule, MatSnackBarModule, MatIconModule],
+  imports: [CommonModule, MatTableModule, MatToolbarModule, MatButtonModule, MatDialogModule, MatSnackBarModule],
   template: `
   <mat-toolbar color="primary">
     <span>Client List</span>
     <span class="spacer"></span>
-    <button mat-raised-button color="accent" (click)="openAddDialog()"><mat-icon>add</mat-icon> Add Client</button>
+    <button mat-raised-button color="accent" (click)="openAddDialog()">Add Client</button>
   </mat-toolbar>
 
   <div class="table-container">

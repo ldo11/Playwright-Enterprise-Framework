@@ -39,6 +39,22 @@ from utils.step import current_steps
 # -------------------------------
 # Reporting & Step Tracking
 # -------------------------------
+@pytest.fixture(scope="session", autouse=True)
+def session_setup_teardown() -> Generator[None, None, None]:
+    print("[SETUP] Test session start")
+    try:
+        yield
+    finally:
+        print("[TEARDOWN] Test session finish")
+
+@pytest.fixture(autouse=True)
+def per_test_setup_teardown() -> Generator[None, None, None]:
+    print("[SETUP] Test start")
+    try:
+        yield
+    finally:
+        print("[TEARDOWN] Test finish")
+
 @pytest.fixture(autouse=True)
 def reset_step_history():
     """

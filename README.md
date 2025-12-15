@@ -44,9 +44,13 @@ A simple REST API using JSON-file storage.
 cd TestProduct/API
 npm install
 npm run dev
-# Server starts at http://localhost:8000
+# Server starts at http://localhost:8000 (PORT can be overridden)
 ```
 *Note: Data is stored in `data.json`. Delete this file to reset the database.*
+
+Notes
+- Dev server is configured not to restart on `data.json`/`token.json` writes to avoid interrupting tests.
+- API supports JWT auth at `POST /login` and CRUD at `/clients`.
 
 ---
 
@@ -96,6 +100,11 @@ pytest
 ```
 *Runs with 2 workers in parallel using Chromium.*
 
+**HTML Report:**
+```bash
+pytest --html=report.html
+```
+
 **Run Specific Suites:**
 ```bash
 # UI Tests only
@@ -124,10 +133,16 @@ pytest -n 4
 - **CRUD Operations**: Verifies creating, updating, and deleting clients.
 - **User Interface**: Checks for dashboard visibility and user greeting ("Hi user1").
 
+Global Fixtures
+- Session and per-test setup/teardown run automatically (autouse) and log start/finish to the console.
+
 ### API Tests (`test_testproduct_api.py`, `test_api_extended.py`)
 - **Health Check**: Verifies API status.
 - **Auth**: Tests login and token generation.
 - **Validation**: Verifies error handling for missing fields, invalid data types, and unauthorized access.
+
+Duplicates
+- A legacy CRUD test (`tests/test_api_crud.py`) is marked skipped to avoid duplication with `tests/test_api_clients_crud.py`.
 
 ## Continuous Integration (GitHub Actions)
 The project includes a pre-configured GitHub Actions workflow located in `.github/workflows/test.yml`. This workflow automatically runs all tests on every Pull Request and push to the `main` or `master` branches.

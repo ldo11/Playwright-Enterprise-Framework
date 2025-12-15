@@ -1,4 +1,7 @@
 import pytest
+
+# Mark this file skipped to avoid duplication with test_api_clients_crud.py
+pytestmark = pytest.mark.skip(reason="Duplicate of test_api_clients_crud; covered there")
 from playwright.sync_api import APIRequestContext, expect
 from utils.step import step
 
