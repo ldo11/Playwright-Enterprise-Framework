@@ -38,3 +38,6 @@ typings/
 # System
 .DS_Store
 Thumbs.db
+TestProduct/API/node_modules/
+TestProduct/UI/node_modules/
+
