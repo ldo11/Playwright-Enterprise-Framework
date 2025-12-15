@@ -38,6 +38,24 @@ typings/
 # System
 .DS_Store
 Thumbs.db
-TestProduct/API/node_modules/
-TestProduct/UI/node_modules/
+TestProduct/API/node_modules/*
+TestProduct/UI/node_modules/*
 
+# Playwright auth/state
+.auth/
+PlayWrightTest/.auth/
+
+# Python virtual environments and caches
+.venv/
+PlayWrightTest/.venv/
+__pycache__/
+PlayWrightTest/**/__pycache__/
+PlayWrightTest/.pytest_cache/
+
+# API generated data and logs
+TestProduct/API/data.json
+TestProduct/API/token.json
+TestProduct/API/*.log
+
+# UI logs
+TestProduct/UI/*.log
