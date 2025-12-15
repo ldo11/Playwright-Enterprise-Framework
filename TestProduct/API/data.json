@@ -1,0 +1,60 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "user1",
+      "passwordHash": "$2a$10$vsenWpNzu3MadxZ2lPkTO.YTzev9cUZGXUKmdXHw3nB6dKEyE6o4y",
+      "role": "Admin"
+    }
+  ],
+  "clients": [
+    {
+      "id": 6,
+      "firstName": "John$",
+      "lastName": "Doe",
+      "dob": "1990-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 5,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 4,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 3,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 2,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 1,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    }
+  ]
+}

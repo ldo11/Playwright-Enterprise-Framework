@@ -4,7 +4,11 @@ import os
 
 # Backend API base URL for the local TestProduct API
 # e.g. http://localhost:8000
+<<<<<<< HEAD
 BASE_URL = os.getenv("TESTPRODUCT_API_BASE_URL", "http://127.0.0.1:3001")
+=======
+BASE_URL = os.getenv("TESTPRODUCT_API_BASE_URL", "http://127.0.0.1:8000")
+>>>>>>> Add_Failed_test
 
 # Web app entry (authenticated area) for the Angular TestProduct UI
 # e.g. http://localhost:4200/dashboard

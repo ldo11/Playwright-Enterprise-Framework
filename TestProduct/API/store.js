@@ -3,6 +3,10 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const DATA_FILE = path.join(__dirname, 'data.json');
+<<<<<<< HEAD
+=======
+const TOKEN_FILE = path.join(__dirname, 'token.json');
+>>>>>>> Add_Failed_test
 
 async function ensureDataFile() {
   try {
@@ -24,6 +28,18 @@ async function ensureDataFile() {
   }
 }
 
+<<<<<<< HEAD
+=======
+async function ensureTokenFile() {
+  try {
+    await fs.access(TOKEN_FILE);
+  } catch {
+    const initial = { tokens: [] };
+    await fs.writeFile(TOKEN_FILE, JSON.stringify(initial, null, 2), 'utf8');
+  }
+}
+
+>>>>>>> Add_Failed_test
 async function readData() {
   await ensureDataFile();
   const raw = await fs.readFile(DATA_FILE, 'utf8');
@@ -34,6 +50,19 @@ async function writeData(data) {
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
+<<<<<<< HEAD
+=======
+async function readTokens() {
+  await ensureTokenFile();
+  const raw = await fs.readFile(TOKEN_FILE, 'utf8');
+  return JSON.parse(raw);
+}
+
+async function writeTokens(tokensDoc) {
+  await fs.writeFile(TOKEN_FILE, JSON.stringify(tokensDoc, null, 2), 'utf8');
+}
+
+>>>>>>> Add_Failed_test
 async function getUserByUsername(username) {
   const data = await readData();
   const uname = (username || '').toLowerCase();
@@ -127,4 +156,68 @@ module.exports = {
   getClientById,
   updateClient,
   deleteClient,
+<<<<<<< HEAD
+=======
+  // token helpers
+  async recordLogin(token, userId, username) {
+    const doc = await readTokens();
+    const now = new Date().toISOString();
+    const existingIdx = (doc.tokens || []).findIndex((t) => t.token === token);
+    const rec = {
+      token,
+      userId,
+      username,
+      status: 'Active',
+      lastUsedAt: now,
+    };
+    if (existingIdx >= 0) {
+      doc.tokens[existingIdx] = rec;
+    } else {
+      doc.tokens.push(rec);
+    }
+    await writeTokens(doc);
+    return rec;
+  },
+
+  async getTokenRecord(token) {
+    const doc = await readTokens();
+    return (doc.tokens || []).find((t) => t.token === token) || null;
+  },
+
+  async touchToken(token) {
+    const doc = await readTokens();
+    const idx = (doc.tokens || []).findIndex((t) => t.token === token);
+    if (idx === -1) return null;
+    const rec = doc.tokens[idx];
+    if (rec.status !== 'Invalid') {
+      rec.status = 'Valid';
+      rec.lastUsedAt = new Date().toISOString();
+      doc.tokens[idx] = rec;
+      await writeTokens(doc);
+    }
+    return rec;
+  },
+
+  async invalidateToken(token) {
+    const doc = await readTokens();
+    const idx = (doc.tokens || []).findIndex((t) => t.token === token);
+    if (idx === -1) return false;
+    doc.tokens[idx].status = 'Invalid';
+    await writeTokens(doc);
+    return true;
+  },
+
+  async setTokenStatus(token, status) {
+    const doc = await readTokens();
+    const idx = (doc.tokens || []).findIndex((t) => t.token === token);
+    if (idx === -1) return false;
+    doc.tokens[idx].status = status;
+    await writeTokens(doc);
+    return true;
+  },
+
+  async tokensDoc() {
+    return readTokens();
+  },
+>>>>>>> Add_Failed_test
 };

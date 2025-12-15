@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+<<<<<<< HEAD
 from playwright.sync_api import Page, expect
+=======
+from playwright.sync_api import Page, expect, Locator
+>>>>>>> Add_Failed_test
 
 from config.settings import APP_URL
 
 
 class HomePage:
+<<<<<<< HEAD
     """POM for the TestProduct Client Management dashboard (Client List)."""
 
     def __init__(self, page: Page) -> None:
@@ -27,10 +32,36 @@ class HomePage:
             expect(self.client_list_toolbar).to_be_visible(timeout=5000)
             expect(self.add_client_button).to_be_visible(timeout=5000)
             expect(self.logout_button).to_be_visible(timeout=5000)
+=======
+    """POM for the TestProduct Angular UI dashboard."""
+
+    def __init__(self, page: Page) -> None:
+        self.page = page
+        # Toolbar within the dashboard component (unique by containing the Add Client button)
+        self.add_client_button = page.locator('button:has-text("Add Client")')
+        self.client_list_toolbar = page.locator("mat-toolbar").filter(has=self.add_client_button)
+
+    def goto(self) -> None:
+        self.page.goto(APP_URL)
+        # First load of Angular dev server can take time; allow generous waits
+        self.page.wait_for_load_state("domcontentloaded")
+        try:
+            expect(self.add_client_button).to_be_visible(timeout=15000)
+        except Exception:
+            # Fallback: wait for network idle then try again briefly
+            self.page.wait_for_load_state("networkidle")
+            expect(self.add_client_button).to_be_visible(timeout=5000)
+
+    def is_logged_in(self) -> bool:
+        # In this demo app, seeing the Dashboard toolbar and Add Client button implies authenticated state
+        try:
+            expect(self.add_client_button).to_be_visible(timeout=15000)
+>>>>>>> Add_Failed_test
             return True
         except Exception:
             return False
 
+<<<<<<< HEAD
     def add_client(self, first_name: str, last_name: str, dob: str, sex: str = "Male") -> None:
         """Create a new client through the UI form."""
         self.add_client_button.click()
@@ -91,3 +122,26 @@ class HomePage:
     def click_delete_for_client(self, first_name: str):
         frame = self.get_actions_frame(first_name)
         frame.get_by_role("button", name="Delete").click()
+=======
+    # ---------- UI Actions ----------
+    def add_client(self, first_name: str, last_name: str, dob_str: str, sex: str) -> None:
+        self.add_client_button.click()
+        dlg = self.page.get_by_role("dialog")
+        expect(dlg).to_be_visible()
+        self.page.get_by_label("First Name").fill(first_name)
+        self.page.get_by_label("Last Name").fill(last_name)
+        # The date input accepts typed date; Angular Material parses MM/DD/YYYY
+        self.page.get_by_label("Date of Birth").fill(dob_str)
+        self.page.get_by_role("combobox", name="Sex").click()
+        self.page.get_by_role("option", name=sex, exact=True).click()
+        self.page.locator('button:has-text("Save")').click()
+        # Wait for dialog to close and table to refresh
+        dlg.wait_for(state="detached")
+        expect(self.add_client_button).to_be_visible(timeout=10000)
+
+    def client_row_by_first_name(self, first_name: str) -> Locator:
+        # Locate the data row containing the first name
+        # Be robust across Angular Material versions (mat-row vs mat-mdc-row).
+        # Match any table row that contains the first name text.
+        return self.page.locator("table").locator("tr", has_text=first_name)
+>>>>>>> Add_Failed_test

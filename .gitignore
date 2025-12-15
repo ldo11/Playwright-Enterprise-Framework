@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python / Playwright
 __pycache__/
 *.py[cod]
@@ -66,3 +67,45 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+=======
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.auth/
+
+# Playwright & Test Reports
+# Limit assets ignore to PlayWrightTest to avoid ignoring Angular src/assets
+report.html
+PlayWrightTest/report.html
+PlayWrightTest/assets/
+test-results/
+playwright-report/
+*.log
+*.xml
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Angular
+.angular/
+dist/
+.sass-cache/
+connect.lock
+coverage/
+libpeerconnection.log
+testem.log
+typings/
+
+# System
+.DS_Store
+Thumbs.db
+
+>>>>>>> Add_Failed_test

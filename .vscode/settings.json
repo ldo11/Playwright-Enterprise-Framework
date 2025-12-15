@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "python.testing.unittestArgs": [
         "-v",
         "-s",
@@ -11,4 +12,11 @@
     "python.testing.pytestArgs": [
         "PlayWrightTest"
     ]
+=======
+    "python.testing.pytestArgs": [
+        "PlayWrightTest"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+>>>>>>> Add_Failed_test
 }

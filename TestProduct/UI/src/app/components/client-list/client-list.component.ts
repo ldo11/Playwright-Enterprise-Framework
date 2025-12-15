@@ -5,6 +5,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
 import { ClientFormComponent } from '../client-form/client-form.component';
 import { ClientService, Client } from '../../services/client.service';
 
@@ -13,12 +14,14 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 @Component({
   selector: 'app-client-list',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatToolbarModule, MatButtonModule, MatDialogModule, MatSnackBarModule],
+  imports: [CommonModule, MatTableModule, MatToolbarModule, MatButtonModule, MatDialogModule, MatSnackBarModule, MatIconModule],
   template: `
   <mat-toolbar color="primary">
     <span>Client List</span>
     <span class="spacer"></span>
-    <button mat-raised-button color="accent" (click)="openAddDialog()">Add Client</button>
+    <span class="greeting" *ngIf="getUsername()">Hi {{ getUsername() }}</span>
+    <span class="spacer"></span>
+    <button mat-raised-button color="accent" (click)="openAddDialog()"><mat-icon>add</mat-icon> Add Client</button>
   </mat-toolbar>
 
   <div class="table-container">
@@ -106,6 +109,17 @@ export class ClientListComponent implements OnInit {
         this.snack.open('Failed to load clients', 'Dismiss', { duration: 3000 });
       }
     });
+  }
+
+  getUsername(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      return (payload?.username || '').toString();
+    } catch {
+      return '';
+    }
   }
 
   openAddDialog(): void {
