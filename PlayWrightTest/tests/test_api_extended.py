@@ -1,6 +1,7 @@
 import pytest
 from playwright.sync_api import APIRequestContext
 from utils.step import step
+from config.settings import BASE_URL
 
 @pytest.mark.api
 class TestAPIExtended:
@@ -77,7 +78,7 @@ class TestAPIExtended:
         """Test accessing protected endpoint without token."""
         with step("Create unauthenticated context"):
             # Create a context without auth headers (default api_context fixture usually has them)
-            api_request = playwright.request.new_context(base_url="http://127.0.0.1:3001")
+            api_request = playwright.request.new_context(base_url=BASE_URL)
         
         with step("Attempt to access /clients without token"):
             response = api_request.get("/clients")
