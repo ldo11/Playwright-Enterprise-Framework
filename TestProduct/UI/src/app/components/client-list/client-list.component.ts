@@ -19,8 +19,6 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   <mat-toolbar color="primary">
     <span>Client List</span>
     <span class="spacer"></span>
-    <span class="greeting" *ngIf="getUsername()">Hi {{ getUsername() }}</span>
-    <span class="spacer"></span>
     <button mat-raised-button color="accent" (click)="openAddDialog()"><mat-icon>add</mat-icon> Add Client</button>
   </mat-toolbar>
 

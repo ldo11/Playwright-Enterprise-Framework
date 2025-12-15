@@ -1,22 +1,7 @@
 {
-<<<<<<< HEAD
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./PlayWrightTest",
-        "-p",
-        "./PlayWrightTest/test_*.py"
-    ],
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestArgs": [
-        "PlayWrightTest"
-    ]
-=======
     "python.testing.pytestArgs": [
         "PlayWrightTest"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
->>>>>>> Add_Failed_test
 }

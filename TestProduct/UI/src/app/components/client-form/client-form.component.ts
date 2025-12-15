@@ -54,7 +54,8 @@ function minAgeValidator(minAge: number): ValidatorFn {
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
         <mat-error *ngIf="form.controls.dob.hasError('required')">Date of birth is required</mat-error>
-        <mat-error *ngIf="form.controls.dob.hasError('minAge')">User must be at least 18 years old</mat-error>
+        <mat-error *ngIf="form.controls.dob.hasError('minAge')">at least 18 years</mat-error>
+        <div *ngIf="form.controls.dob.hasError('minAge')">at least 18 years</div>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-100">

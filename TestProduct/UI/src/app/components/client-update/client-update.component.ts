@@ -80,7 +80,7 @@ export class ClientUpdateComponent implements OnInit {
   clientId: number | null = null;
   loading = true;
   saving = false;
-  sexes: Sex[] = ['Male', 'Female', 'N/A'];
+  sexes: Sex[] = ['Male', 'Female'];
 
   form = this.fb.group({
     firstName: ['', Validators.required],

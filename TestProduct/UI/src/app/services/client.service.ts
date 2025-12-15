@@ -14,7 +14,7 @@ export interface Client {
 
 @Injectable({ providedIn: 'root' })
 export class ClientService {
-  private baseUrl = 'http://127.0.0.1:3001';
+  private baseUrl = 'http://127.0.0.1:8000';
 
   constructor(private http: HttpClient) {}
 
