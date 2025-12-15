@@ -59,3 +59,4 @@ TestProduct/API/*.log
 
 # UI logs
 TestProduct/UI/*.log
+TestProduct/UI/.angular/*
