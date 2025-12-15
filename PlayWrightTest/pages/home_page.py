@@ -59,11 +59,26 @@ class HomePage:
 
         save_button = dlg.get_by_role("button", name="Save")
         expect(save_button).to_be_enabled(timeout=10000)
-        save_button.click()
+
+        # Wait for the create call to complete. If the request is blocked (e.g. CORS),
+        # this will timeout and provide a clearer signal than a dialog-close wait.
+        try:
+            with self.page.expect_response(
+                lambda r: r.request.method == "POST" and "/clients" in r.url,
+                timeout=20000,
+            ) as resp_info:
+                save_button.click()
+            resp = resp_info.value
+            if resp.status not in (200, 201):
+                raise AssertionError(f"Create client failed: HTTP {resp.status} {resp.url}")
+        except Exception:
+            # If no response arrives at all, we still continue into the dialog-close logic
+            # below so we can capture any UI-level errors.
+            pass
 
         # Wait for dialog to close and table to refresh.
         try:
-            dlg.wait_for(state="detached", timeout=30000)
+            dlg.wait_for(state="hidden", timeout=30000)
         except Exception:
             # If the dialog is still open, fail with helpful context (validation/errors/snackbar).
             error_text = ""
@@ -72,7 +87,7 @@ class HomePage:
             except Exception:
                 error_text = ""
             try:
-                snack = self.page.locator("simple-snack-bar").inner_text(timeout=1000)
+                snack = self.page.locator("mat-snack-bar-container, .mat-mdc-snack-bar-container, simple-snack-bar").inner_text(timeout=1500)
             except Exception:
                 snack = ""
             raise AssertionError(

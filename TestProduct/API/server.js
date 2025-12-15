@@ -10,7 +10,12 @@ const swaggerUi = require('swagger-ui-express');
 const app = express();
 
 // CORS - allow Angular dev server by default
-const corsOrigin = process.env.CORS_ORIGIN || ['http://localhost:4201', 'http://127.0.0.1:4201', 'http://localhost:4200'];
+const corsOrigin = process.env.CORS_ORIGIN || [
+  'http://localhost:4201',
+  'http://127.0.0.1:4201',
+  'http://localhost:4200',
+  'http://127.0.0.1:4200',
+];
 app.use(cors({ origin: corsOrigin, credentials: true }));
 
 app.use(express.json());
