@@ -3,10 +3,9 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const DATA_FILE = path.join(__dirname, 'data.json');
-<<<<<<< HEAD
-=======
+
 const TOKEN_FILE = path.join(__dirname, 'token.json');
->>>>>>> Add_Failed_test
+
 
 async function ensureDataFile() {
   try {
@@ -28,8 +27,7 @@ async function ensureDataFile() {
   }
 }
 
-<<<<<<< HEAD
-=======
+
 async function ensureTokenFile() {
   try {
     await fs.access(TOKEN_FILE);
@@ -39,7 +37,7 @@ async function ensureTokenFile() {
   }
 }
 
->>>>>>> Add_Failed_test
+
 async function readData() {
   await ensureDataFile();
   const raw = await fs.readFile(DATA_FILE, 'utf8');
@@ -50,8 +48,7 @@ async function writeData(data) {
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-<<<<<<< HEAD
-=======
+
 async function readTokens() {
   await ensureTokenFile();
   const raw = await fs.readFile(TOKEN_FILE, 'utf8');
@@ -62,7 +59,7 @@ async function writeTokens(tokensDoc) {
   await fs.writeFile(TOKEN_FILE, JSON.stringify(tokensDoc, null, 2), 'utf8');
 }
 
->>>>>>> Add_Failed_test
+
 async function getUserByUsername(username) {
   const data = await readData();
   const uname = (username || '').toLowerCase();
@@ -156,8 +153,7 @@ module.exports = {
   getClientById,
   updateClient,
   deleteClient,
-<<<<<<< HEAD
-=======
+
   // token helpers
   async recordLogin(token, userId, username) {
     const doc = await readTokens();
@@ -219,5 +215,4 @@ module.exports = {
   async tokensDoc() {
     return readTokens();
   },
->>>>>>> Add_Failed_test
 };

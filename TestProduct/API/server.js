@@ -46,11 +46,7 @@ const swaggerOptions = {
             FirstName: { type: 'string' },
             LastName: { type: 'string' },
             DOB: { type: 'string', format: 'date' },
-<<<<<<< HEAD
-            Sex: { type: 'string', enum: ['Male', 'Female', 'N/A'] },
-=======
             Sex: { type: 'string', enum: ['Male', 'Female'] },
->>>>>>> Add_Failed_test
             CreatedByUserID: { type: 'integer', format: 'int32' },
           },
         },
@@ -72,13 +68,7 @@ const swaggerOptions = {
         get: {
           summary: 'Health check',
           responses: {
-<<<<<<< HEAD
-            200: {
-              description: 'API is healthy',
-            },
-=======
             200: { description: 'API is healthy' },
->>>>>>> Add_Failed_test
           },
         },
       },
@@ -97,14 +87,7 @@ const swaggerOptions = {
                   },
                   required: ['username', 'password'],
                 },
-<<<<<<< HEAD
-                example: {
-                  username: 'user1',
-                  password: '123456',
-                },
-=======
                 example: { username: 'user1', password: '123456' },
->>>>>>> Add_Failed_test
               },
             },
           },
@@ -125,27 +108,11 @@ const swaggerOptions = {
             },
             400: {
               description: 'Missing username or password',
-<<<<<<< HEAD
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-            401: {
-              description: 'Invalid credentials',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-=======
               content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
             },
             401: {
               description: 'Invalid credentials',
               content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
->>>>>>> Add_Failed_test
             },
           },
         },
@@ -153,52 +120,7 @@ const swaggerOptions = {
       '/clients': {
         get: {
           summary: 'Get clients',
-<<<<<<< HEAD
-          description:
-            'Admin users get all clients. Non-admin users get only their own. Use ?mine=true to force own clients.',
-          parameters: [
-            {
-              name: 'mine',
-              in: 'query',
-              required: false,
-              schema: { type: 'boolean' },
-              description: 'If true, return only clients created by the current user.',
-            },
-          ],
-          security: [
-            {
-              bearerAuth: [],
-            },
-          ],
-          responses: {
-            200: {
-              description: 'List of clients',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'array',
-                    items: { $ref: '#/components/schemas/Client' },
-                  },
-                },
-              },
-            },
-            401: {
-              description: 'Missing token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-            403: {
-              description: 'Invalid or expired token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-=======
+
           description: 'Admin users get all clients. Non-admin users get only their own. Use ?mine=true to force own clients.',
           parameters: [
             { name: 'mine', in: 'query', required: false, schema: { type: 'boolean' }, description: 'If true, return only clients created by the current user.' },
@@ -208,20 +130,11 @@ const swaggerOptions = {
             200: { description: 'List of clients', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Client' } } } } },
             401: { description: 'Missing token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
             403: { description: 'Invalid or expired token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
->>>>>>> Add_Failed_test
           },
         },
         post: {
           summary: 'Create a new client',
-<<<<<<< HEAD
-          security: [
-            {
-              bearerAuth: [],
-            },
-          ],
-=======
           security: [{ bearerAuth: [] }],
->>>>>>> Add_Failed_test
           requestBody: {
             required: true,
             content: {
@@ -229,17 +142,10 @@ const swaggerOptions = {
                 schema: {
                   type: 'object',
                   properties: {
-<<<<<<< HEAD
-                    firstName: { type: 'string' },
-                    lastName: { type: 'string' },
-                    dob: { type: 'string', format: 'date' },
-                    sex: { type: 'string', enum: ['Male', 'Female', 'N/A'] },
-=======
                     firstName: { type: 'string', maxLength: 25, pattern: '^[A-Za-z]+$' },
                     lastName: { type: 'string', maxLength: 20, pattern: '^[A-Za-z]+$' },
                     dob: { type: 'string', format: 'date' },
                     sex: { type: 'string', enum: ['Male', 'Female'] },
->>>>>>> Add_Failed_test
                   },
                   required: ['firstName', 'lastName', 'dob', 'sex'],
                 },
@@ -247,40 +153,7 @@ const swaggerOptions = {
             },
           },
           responses: {
-<<<<<<< HEAD
-            201: {
-              description: 'Client created',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Client' },
-                },
-              },
-            },
-            400: {
-              description: 'Validation error',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-            401: {
-              description: 'Missing token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-            403: {
-              description: 'Invalid or expired token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-=======
+
             201: { description: 'Client created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Client' } } } },
             400: { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
             401: { description: 'Missing token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
@@ -305,7 +178,6 @@ const swaggerOptions = {
           responses: {
             200: { description: 'Token invalidated' },
             401: { description: 'Missing or invalid token' },
->>>>>>> Add_Failed_test
           },
         },
       },
@@ -316,15 +188,9 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-<<<<<<< HEAD
-const PORT = process.env.PORT || 3001;
-=======
 const PORT = process.env.PORT || 8000;
->>>>>>> Add_Failed_test
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_super_secret_change_me';
 const INACTIVITY_MS = (process.env.TOKEN_INACTIVITY_MINUTES ? Number(process.env.TOKEN_INACTIVITY_MINUTES) : 30) * 60 * 1000;
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -501,12 +367,7 @@ async function updateClientHandler(req, res) {
     if (!firstName || !lastName || !dob || !sex)
       return res.status(400).json({ message: 'firstName, lastName, dob, and sex are required' });
 
-<<<<<<< HEAD
-    if (!isValidSex(sex)) return res.status(400).json({ message: "sex must be 'Male', 'Female', or 'N/A'" });
 
-    const dobDate = new Date(dob);
-    if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'dob must be a valid date' });
-=======
     if (!isValidSex(sex)) return res.status(400).json({ message: "sex must be 'Male' or 'Female'" });
     if (!lettersOnly(firstName)) return res.status(400).json({ message: 'firstName must contain only letters' });
     if (!lettersOnly(lastName)) return res.status(400).json({ message: 'lastName must contain only letters' });
@@ -516,7 +377,7 @@ async function updateClientHandler(req, res) {
     const dobDate = new Date(dob);
     if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'dob must be a valid date' });
     if (!isAtLeastAge(dobDate, 18)) return res.status(400).json({ message: 'User must be at least 18 years old' });
->>>>>>> Add_Failed_test
+
 
     const existing = await store.getClientById(id);
     if (!existing) return res.status(404).json({ message: 'Client not found' });
@@ -568,8 +429,6 @@ async function deleteClientHandler(req, res) {
 }
 app.delete(['/api/clients/:id', '/clients/:id'], authenticateToken, deleteClientHandler);
 
-<<<<<<< HEAD
-=======
 // Token status and invalidation endpoints
 app.get(['/api/tokens/status', '/tokens/status'], authenticateToken, async (req, res) => {
   try {
@@ -598,7 +457,6 @@ app.post(['/api/tokens/invalidate', '/tokens/invalidate'], authenticateToken, as
   }
 });
 
->>>>>>> Add_Failed_test
 // -----------------------------
 // Start server
 // -----------------------------
