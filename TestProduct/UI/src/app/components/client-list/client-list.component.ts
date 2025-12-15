@@ -17,6 +17,8 @@ import { ClientService, Client } from '../../services/client.service';
   <mat-toolbar color="primary">
     <span>Dashboard</span>
     <span class="spacer"></span>
+    <span class="greeting" *ngIf="getUsername()">Hi {{ getUsername() }}</span>
+    <span class="spacer"></span>
     <button mat-raised-button color="accent" (click)="openAddDialog()"><mat-icon>add</mat-icon> Add Client</button>
   </mat-toolbar>
 
@@ -87,6 +89,17 @@ export class ClientListComponent implements OnInit {
         this.snack.open('Failed to load clients', 'Dismiss', { duration: 3000 });
       }
     });
+  }
+
+  getUsername(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      return (payload?.username || '').toString();
+    } catch {
+      return '';
+    }
   }
 
   openAddDialog(): void {

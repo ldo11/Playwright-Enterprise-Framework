@@ -7,12 +7,15 @@ from typing import Optional
 
 from playwright.sync_api import APIRequestContext, Playwright
 
-from config.settings import AUTH_COOKIE_NAME
+from config.settings import AUTH_COOKIE_NAME, API_USERNAME as CFG_USER, API_PASSWORD as CFG_PASS
 
 
 def _env_creds() -> tuple[Optional[str], Optional[str]]:
     """Fetch demo credentials from environment variables."""
-    return os.getenv("DEMO_EMAIL"), os.getenv("DEMO_PASSWORD")
+    # Try explicit TESTPRODUCT_*, then DEMO_*, then fall back to config defaults
+    user = os.getenv("TESTPRODUCT_USERNAME") or os.getenv("DEMO_EMAIL") or CFG_USER
+    pwd = os.getenv("TESTPRODUCT_PASSWORD") or os.getenv("DEMO_PASSWORD") or CFG_PASS
+    return user, pwd
 
 
 def _env_token() -> Optional[str]:
@@ -20,24 +23,26 @@ def _env_token() -> Optional[str]:
     return os.getenv("DEMO_JWT")
 
 
-def _write_storage_state_cookie(storage_path: Path, cookie_name: str, cookie_value: str, domain: str) -> None:
-    """Persist a minimal storageState JSON that contains the given cookie for the target domain."""
+def _write_storage_state_localstorage(storage_path: Path, key: str, value: str, origin: str) -> None:
+    """Persist a storageState JSON that contains a localStorage token for the target origin."""
     storage = {
-        "cookies": [
+        "cookies": [],
+        "origins": [
             {
-                "name": cookie_name,
-                "value": cookie_value,
-                "domain": domain,
-                "path": "/",
-                "httpOnly": True,
-                "secure": True,
-                "sameSite": "Lax",
+                "origin": origin.rstrip("/"),
+                "localStorage": [
+                    {"name": key, "value": value},
+                ],
             }
         ],
-        "origins": [],
     }
     storage_path.parent.mkdir(parents=True, exist_ok=True)
     storage_path.write_text(json.dumps(storage, indent=2))
+
+
+def _post_json(request_context: APIRequestContext, path: str, payload: dict):
+    """Compatibility helper: send JSON body even when playwright version lacks 'json=' kwarg."""
+    return request_context.post(path, data=json.dumps(payload), headers={"Content-Type": "application/json"})
 
 
 def create_authenticated_storage_state(
@@ -62,24 +67,24 @@ def create_authenticated_storage_state(
 
     Returns True if a storageState file was successfully written; else False.
     """
-    email, password = _env_creds()
+    username, password = _env_creds()
     jwt_token = _env_token()
 
     # If no creds but a token was provided, synthesize storageState directly.
-    if (not email or not password) and jwt_token:
-        _write_storage_state_cookie(Path(storage_path), auth_cookie_name, jwt_token, cookie_domain)
+    if (not username or not password) and jwt_token:
+        _write_storage_state_localstorage(Path(storage_path), auth_cookie_name, jwt_token, cookie_domain)
         return True
 
     # If we lack both creds and token, cannot proceed.
-    if not (email and password):
+    if not (username and password):
         return False
 
     request_context: APIRequestContext = playwright.request.new_context(base_url=base_url, ignore_https_errors=True)
     try:
-        # Most login endpoints accept either JSON or form data; we try JSON first then fallback.
-        resp = request_context.post(login_api_path, data=None, json={"email": email, "password": password})
-        if resp.status == 415:  # Unsupported Media Type, try form data
-            resp = request_context.post(login_api_path, data={"email": email, "password": password})
+        # Prefer JSON (server expects JSON); try username first, then email as fallback
+        resp = _post_json(request_context, login_api_path, {"username": username, "password": password})
+        if not resp.ok:
+            resp = _post_json(request_context, login_api_path, {"email": username, "password": password})
 
         if not resp.ok:
             # If server responded with error but returned a token payload, still try to use it.
@@ -95,7 +100,7 @@ def create_authenticated_storage_state(
                     or payload.get("access_token")
                 )
             if token:
-                _write_storage_state_cookie(Path(storage_path), auth_cookie_name, token, cookie_domain)
+                _write_storage_state_localstorage(Path(storage_path), auth_cookie_name, token, cookie_domain)
                 return True
             return False
 
@@ -106,25 +111,20 @@ def create_authenticated_storage_state(
         except Exception:
             pass
 
-        # Persist any cookies captured by the request context
-        request_context.storage_state(path=str(storage_path))
-
-        # If no cookies were set but a token is present, synthesize cookie-based storageState.
-        # This guards APIs that return tokens without Set-Cookie.
-        try:
-            with open(storage_path, "r", encoding="utf-8") as f:
-                current_state = json.load(f)
-        except Exception:
-            current_state = {"cookies": [], "origins": []}
-
-        if (not current_state.get("cookies")) and isinstance(payload, dict):
+        # Synthesize storageState with localStorage token for the UI origin
+        if isinstance(payload, dict):
             token = (
                 payload.get("data", {}).get("token")
                 or payload.get("token")
                 or payload.get("access_token")
             )
-            if token:
-                _write_storage_state_cookie(Path(storage_path), auth_cookie_name, token, cookie_domain)
+        else:
+            token = None
+        if token:
+            _write_storage_state_localstorage(Path(storage_path), auth_cookie_name, token, cookie_domain)
+        else:
+            # As a last resort, persist whatever cookies exist (if server set any)
+            request_context.storage_state(path=str(storage_path))
 
         return True
     finally:

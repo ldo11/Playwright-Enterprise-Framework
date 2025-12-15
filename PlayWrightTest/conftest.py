@@ -2,6 +2,7 @@ from __future__ import annotations
 
 # Core Pytest and typing
 import os
+import json
 from pathlib import Path
 from typing import Generator, Optional
 
@@ -25,6 +26,7 @@ from config.settings import (
     COOKIE_DOMAIN,
     API_USERNAME,
     API_PASSWORD,
+    UI_BASE_URL,
 )
 from utils.auth import create_authenticated_storage_state
 from utils.step import current_steps
@@ -125,7 +127,8 @@ def api_token(playwright: Playwright) -> str:
     request_context = playwright.request.new_context(base_url=BASE_URL)
     response = request_context.post(
         LOGIN_API_PATH,
-        data={"username": API_USERNAME, "password": API_PASSWORD},
+        data=json.dumps({"username": API_USERNAME, "password": API_PASSWORD}),
+        headers={"Content-Type": "application/json"},
     )
     if not response.ok:
         raise RuntimeError(f"Failed to get API token: {response.status} {response.text()}")
@@ -155,14 +158,19 @@ def new_client(api_context: APIRequestContext) -> Generator[dict, None, None]:
     import uuid
     # Unique suffix to avoid collisions in parallel execution
     unique_id = str(uuid.uuid4())[:8]
+    letters = "".join([c for c in unique_id if c.isalpha()])[:6] or "X"
     client_data = {
-        "firstName": f"Auto{unique_id}",
+        "firstName": f"Auto{letters}",
         "lastName": "Test",
         "dob": "1990-01-01",
         "sex": "Male",
     }
     
-    response = api_context.post("/clients", data=client_data)
+    response = api_context.post(
+        "/clients",
+        data=json.dumps(client_data),
+        headers={"Content-Type": "application/json"},
+    )
     if not response.ok:
         pytest.fail(f"Failed to create new client fixture: {response.text()}")
         
@@ -289,11 +297,18 @@ def auth_context(session_browser: Browser, auth_storage_path: str) -> Generator[
 
 
 @pytest.fixture()
-def auth_page(auth_context: BrowserContext) -> Generator[Page, None, None]:
+def auth_page(auth_context: BrowserContext, api_token: str) -> Generator[Page, None, None]:
     """
     Convenience fixture returning a pre-authenticated Page.
     """
+    # Ensure token is present in localStorage for UI origin before navigating to dashboard
+    auth_context.add_init_script("window.localStorage.setItem('token', '" + api_token + "')")
     page = auth_context.new_page()
+    # Prime origin so localStorage is set for the correct site before tests navigate
+    try:
+        page.goto(UI_BASE_URL)
+    except Exception:
+        pass
     try:
         yield page
     finally:

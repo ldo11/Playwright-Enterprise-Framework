@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export type Sex = 'Male' | 'Female' | 'N/A';
+export type Sex = 'Male' | 'Female';
 export interface Client {
   firstName: string;
   lastName: string;

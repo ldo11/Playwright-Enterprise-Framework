@@ -46,7 +46,7 @@ const swaggerOptions = {
             FirstName: { type: 'string' },
             LastName: { type: 'string' },
             DOB: { type: 'string', format: 'date' },
-            Sex: { type: 'string', enum: ['Male', 'Female', 'N/A'] },
+            Sex: { type: 'string', enum: ['Male', 'Female'] },
             CreatedByUserID: { type: 'integer', format: 'int32' },
           },
         },
@@ -68,9 +68,7 @@ const swaggerOptions = {
         get: {
           summary: 'Health check',
           responses: {
-            200: {
-              description: 'API is healthy',
-            },
+            200: { description: 'API is healthy' },
           },
         },
       },
@@ -89,10 +87,7 @@ const swaggerOptions = {
                   },
                   required: ['username', 'password'],
                 },
-                example: {
-                  username: 'user1',
-                  password: '123456',
-                },
+                example: { username: 'user1', password: '123456' },
               },
             },
           },
@@ -113,19 +108,11 @@ const swaggerOptions = {
             },
             400: {
               description: 'Missing username or password',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
             },
             401: {
               description: 'Invalid credentials',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
             },
           },
         },
@@ -133,59 +120,20 @@ const swaggerOptions = {
       '/clients': {
         get: {
           summary: 'Get clients',
-          description:
-            'Admin users get all clients. Non-admin users get only their own. Use ?mine=true to force own clients.',
+          description: 'Admin users get all clients. Non-admin users get only their own. Use ?mine=true to force own clients.',
           parameters: [
-            {
-              name: 'mine',
-              in: 'query',
-              required: false,
-              schema: { type: 'boolean' },
-              description: 'If true, return only clients created by the current user.',
-            },
+            { name: 'mine', in: 'query', required: false, schema: { type: 'boolean' }, description: 'If true, return only clients created by the current user.' },
           ],
-          security: [
-            {
-              bearerAuth: [],
-            },
-          ],
+          security: [{ bearerAuth: [] }],
           responses: {
-            200: {
-              description: 'List of clients',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'array',
-                    items: { $ref: '#/components/schemas/Client' },
-                  },
-                },
-              },
-            },
-            401: {
-              description: 'Missing token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-            403: {
-              description: 'Invalid or expired token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
+            200: { description: 'List of clients', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Client' } } } } },
+            401: { description: 'Missing token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            403: { description: 'Invalid or expired token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
           },
         },
         post: {
           summary: 'Create a new client',
-          security: [
-            {
-              bearerAuth: [],
-            },
-          ],
+          security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
             content: {
@@ -193,10 +141,10 @@ const swaggerOptions = {
                 schema: {
                   type: 'object',
                   properties: {
-                    firstName: { type: 'string' },
-                    lastName: { type: 'string' },
+                    firstName: { type: 'string', maxLength: 25, pattern: '^[A-Za-z]+$' },
+                    lastName: { type: 'string', maxLength: 20, pattern: '^[A-Za-z]+$' },
                     dob: { type: 'string', format: 'date' },
-                    sex: { type: 'string', enum: ['Male', 'Female', 'N/A'] },
+                    sex: { type: 'string', enum: ['Male', 'Female'] },
                   },
                   required: ['firstName', 'lastName', 'dob', 'sex'],
                 },
@@ -204,38 +152,30 @@ const swaggerOptions = {
             },
           },
           responses: {
-            201: {
-              description: 'Client created',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Client' },
-                },
-              },
-            },
-            400: {
-              description: 'Validation error',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-            401: {
-              description: 'Missing token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
-            403: {
-              description: 'Invalid or expired token',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Error' },
-                },
-              },
-            },
+            201: { description: 'Client created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Client' } } } },
+            400: { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            401: { description: 'Missing token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            403: { description: 'Invalid or expired token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          },
+        },
+      },
+      '/tokens/status': {
+        get: {
+          summary: 'Get current token status',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: 'Token status information', content: { 'application/json': { schema: { type: 'object', properties: { status: { type: 'string', enum: ['Active', 'Valid', 'Invalid'] }, lastUsedAt: { type: 'string', format: 'date-time' } } } } } },
+            401: { description: 'Missing or invalid token' },
+          },
+        },
+      },
+      '/tokens/invalidate': {
+        post: {
+          summary: 'Invalidate current token',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: 'Token invalidated' },
+            401: { description: 'Missing or invalid token' },
           },
         },
       },
@@ -248,29 +188,68 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_super_secret_change_me';
+const INACTIVITY_MS = (process.env.TOKEN_INACTIVITY_MINUTES ? Number(process.env.TOKEN_INACTIVITY_MINUTES) : 30) * 60 * 1000;
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // -----------------------------
 // Auth middleware
 // -----------------------------
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const auth = req.headers['authorization'] || '';
   const token = auth.startsWith('Bearer ') ? auth.substring(7) : null;
   if (!token) return res.status(401).json({ message: 'Missing token' });
 
-  jwt.verify(token, JWT_SECRET, (err, payload) => {
-    if (err) return res.status(403).json({ message: 'Invalid or expired token' });
-    req.user = payload; // { userId, username, role }
+  let payload;
+  try {
+    payload = jwt.verify(token, JWT_SECRET);
+  } catch (e) {
+    return res.status(403).json({ message: 'Invalid or expired token' });
+  }
+
+  try {
+    const rec = await store.getTokenRecord(token);
+    if (!rec) return res.status(401).json({ message: 'Token not recognized' });
+    if (rec.status === 'Invalid') return res.status(401).json({ message: 'Token invalid' });
+
+    const lastUsed = rec.lastUsedAt ? new Date(rec.lastUsedAt) : null;
+    const now = new Date();
+    if (!lastUsed || isNaN(lastUsed.getTime())) {
+      await store.touchToken(token);
+    } else {
+      const diff = now.getTime() - lastUsed.getTime();
+      if (diff > INACTIVITY_MS) {
+        await store.setTokenStatus(token, 'Invalid');
+        return res.status(401).json({ message: 'Token expired due to inactivity' });
+      }
+      await store.touchToken(token);
+    }
+
+    req.user = payload;
     next();
-  });
+  } catch (err) {
+    console.error('Auth error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 }
 
 // -----------------------------
 // Helpers
 // -----------------------------
 function isValidSex(val) {
-  return val === 'Male' || val === 'Female' || val === 'N/A';
+  return val === 'Male' || val === 'Female';
+}
+
+function lettersOnly(str) {
+  return /^[A-Za-z]+$/.test((str || '').toString());
+}
+
+function isAtLeastAge(dobDate, minAge) {
+  const now = new Date();
+  let age = now.getFullYear() - dobDate.getFullYear();
+  const m = now.getMonth() - dobDate.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dobDate.getDate())) age--;
+  return age >= minAge;
 }
 
 // -----------------------------
@@ -293,6 +272,7 @@ async function loginHandler(req, res) {
     const payload = { userId: user.id, username: user.username, role: user.role };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
 
+    await store.recordLogin(token, user.id, user.username);
     return res.json({ token, user: payload });
   } catch (err) {
     console.error('Login error:', err);
@@ -326,10 +306,16 @@ async function createClientHandler(req, res) {
     if (!firstName || !lastName || !dob || !sex)
       return res.status(400).json({ message: 'firstName, lastName, dob, and sex are required' });
 
-    if (!isValidSex(sex)) return res.status(400).json({ message: "sex must be 'Male', 'Female', or 'N/A'" });
+    if (!isValidSex(sex)) return res.status(400).json({ message: "sex must be 'Male' or 'Female'" });
+
+    if (!lettersOnly(firstName)) return res.status(400).json({ message: 'firstName must contain only letters' });
+    if (!lettersOnly(lastName)) return res.status(400).json({ message: 'lastName must contain only letters' });
+    if (firstName.toString().length > 25) return res.status(400).json({ message: 'firstName max length is 25' });
+    if (lastName.toString().length > 20) return res.status(400).json({ message: 'lastName max length is 20' });
 
     const dobDate = new Date(dob);
     if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'dob must be a valid date' });
+    if (!isAtLeastAge(dobDate, 18)) return res.status(400).json({ message: 'User must be at least 18 years old' });
 
     const created = await store.createClient({
       firstName,
@@ -379,10 +365,15 @@ async function updateClientHandler(req, res) {
     if (!firstName || !lastName || !dob || !sex)
       return res.status(400).json({ message: 'firstName, lastName, dob, and sex are required' });
 
-    if (!isValidSex(sex)) return res.status(400).json({ message: "sex must be 'Male', 'Female', or 'N/A'" });
+    if (!isValidSex(sex)) return res.status(400).json({ message: "sex must be 'Male' or 'Female'" });
+    if (!lettersOnly(firstName)) return res.status(400).json({ message: 'firstName must contain only letters' });
+    if (!lettersOnly(lastName)) return res.status(400).json({ message: 'lastName must contain only letters' });
+    if (firstName.toString().length > 25) return res.status(400).json({ message: 'firstName max length is 25' });
+    if (lastName.toString().length > 20) return res.status(400).json({ message: 'lastName max length is 20' });
 
     const dobDate = new Date(dob);
     if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'dob must be a valid date' });
+    if (!isAtLeastAge(dobDate, 18)) return res.status(400).json({ message: 'User must be at least 18 years old' });
 
     const existing = await store.getClientById(id);
     if (!existing) return res.status(404).json({ message: 'Client not found' });
@@ -433,6 +424,34 @@ async function deleteClientHandler(req, res) {
   }
 }
 app.delete(['/api/clients/:id', '/clients/:id'], authenticateToken, deleteClientHandler);
+
+// Token status and invalidation endpoints
+app.get(['/api/tokens/status', '/tokens/status'], authenticateToken, async (req, res) => {
+  try {
+    const auth = req.headers['authorization'] || '';
+    const token = auth.startsWith('Bearer ') ? auth.substring(7) : null;
+    const rec = token ? await store.getTokenRecord(token) : null;
+    if (!token || !rec) return res.status(404).json({ message: 'Token not found' });
+    return res.json({ status: rec.status, lastUsedAt: rec.lastUsedAt });
+  } catch (err) {
+    console.error('Token status error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.post(['/api/tokens/invalidate', '/tokens/invalidate'], authenticateToken, async (req, res) => {
+  try {
+    const auth = req.headers['authorization'] || '';
+    const token = auth.startsWith('Bearer ') ? auth.substring(7) : null;
+    if (!token) return res.status(400).json({ message: 'Missing token' });
+    const ok = await store.invalidateToken(token);
+    if (!ok) return res.status(404).json({ message: 'Token not found' });
+    return res.json({ message: 'Token invalidated' });
+  } catch (err) {
+    console.error('Token invalidate error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // -----------------------------
 // Start server

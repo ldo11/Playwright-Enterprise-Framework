@@ -7,5 +7,54 @@
       "role": "Admin"
     }
   ],
-  "clients": []
+  "clients": [
+    {
+      "id": 6,
+      "firstName": "John$",
+      "lastName": "Doe",
+      "dob": "1990-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 5,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 4,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 3,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 2,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    },
+    {
+      "id": 1,
+      "firstName": "AAA_FastFail",
+      "lastName": "User",
+      "dob": "2000-01-01",
+      "sex": "Male",
+      "createdByUserId": 1
+    }
+  ]
 }
